@@ -1,9 +1,9 @@
 #ifndef VX_VEC_HPP
 #define VX_VEC_HPP
 
-#include <utility>
-#include <type_traits>
 #include <array>
+
+#include "common.hpp"
 
 #ifdef VX_GLM_EXT
 #include <glm/vec2.hpp>
@@ -14,9 +14,6 @@
 
 namespace vx
 {
-
-using std::size_t;
-
 
 namespace detail
 {

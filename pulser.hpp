@@ -4,15 +4,14 @@
 #include <atomic>
 #include <chrono>
 
+#include "common.hpp"
+
 
 namespace vx
 {
 
-using std::size_t;
-
-
 template<typename _Derived, size_t _Fps>
-struct basic_pulser
+struct basic_pulser : noncopyable
 {
 	using derived_type = _Derived;
 
