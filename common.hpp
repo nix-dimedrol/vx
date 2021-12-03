@@ -50,6 +50,16 @@ struct is_pack_same<_Arg0, _Arg1, _Args...>
 } // namespace detail
 
 
+template<typename ..._Args>
+struct types_pack
+{
+	using is_same = detail::is_pack_same<_Args...>;
+
+	template<typename _T>
+	using is_contain = detail::is_pack_contain<_T, _Args...>;
+};
+
+
 } // namespace vx
 
 #endif // COMMON_H

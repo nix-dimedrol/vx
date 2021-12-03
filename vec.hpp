@@ -73,6 +73,7 @@ struct __vec_impl : std::array<_T, _N>
 	constexpr explicit __vec_impl(value_type const (&_ar)[_N]) noexcept
 		: __vec_impl(_ar, detail::index_seq_make<_N>{}) {}
 
+
 	template<size_t _M, size_t... _Indices1, size_t... _Indices2>
 	constexpr explicit __vec_impl(
 		__vec_impl<value_type, _M> const & _v1, detail::index_seq<_Indices1...>,
@@ -126,7 +127,7 @@ struct vec : __vec_impl<_T, _N>
 		: base_type(_first, _other...) {}
 
 	template<typename... _Args, typename = std::enable_if_t<sizeof ...(_Args) == _N &&
-		detail::is_pack_same<value_type, std::remove_reference_t<std::remove_const_t<_Args>>...>::value>>
+		types_pack<value_type, std::remove_reference_t<std::remove_const_t<_Args>>...>::is_same::value>>
 	constexpr vec(_Args... args) noexcept : base_type({args...}) {}
 
 	template<size_t _M, typename = std::enable_if_t<(_M > _N)>>
@@ -142,13 +143,15 @@ struct vec : __vec_impl<_T, _N>
 	using glm_type = glm::vec<_N, value_type>;
 
 	static constexpr this_type & from_glm(glm_type & _v) noexcept
-	{ *static_cast<this_type*>(static_cast<void*>(&_v)); }
+	{ return *static_cast<this_type*>(static_cast<void*>(&_v)); }
 
 	static constexpr this_type const & from_glm(glm_type const & _v) noexcept
-	{ *static_cast<this_type*>(static_cast<void*>(&_v)); }
+	{ return *static_cast<this_type const*>(static_cast<void const *>(&_v)); }
 
-	constexpr glm_type & to_glm(void) noexcept { *static_cast<glm_type*>(static_cast<void*>(this)); }
-	constexpr glm_type const & to_glm(void) const noexcept { *static_cast<glm_type*>(static_cast<void*>(this)); }
+	constexpr glm_type & to_glm(void) noexcept
+	{ return *static_cast<glm_type*>(static_cast<void*>(this)); }
+	constexpr glm_type const & to_glm(void) const noexcept
+	{ return *static_cast<glm_type*>(static_cast<void*>(this)); }
 
 #endif
 
