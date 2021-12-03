@@ -41,19 +41,6 @@ template<typename _T, _T _Arg0, _T... _Args> struct sum<_T, _Arg0, _Args...>
 	static constexpr _T value = _Arg0 + sum<_T, _Args...>::value;
 };
 
-
-template<typename...> struct __and;
-template<typename _T> struct __and<_T> : _T {};
-template<typename _Arg0, typename... _Args> struct __and<_Arg0, _Args...>
-	: std::integral_constant<bool, _Arg0::value && __and<_Args...>::value> {};
-
-
-template<typename...> struct is_same_pack;
-template<typename _T> struct is_same_pack<_T> : std::true_type {};
-template<typename _Arg0, typename _Arg1, typename... _Args>
-struct is_same_pack<_Arg0, _Arg1, _Args...>
-	: __and<std::is_same<_Arg0, _Arg1>, is_same_pack<_Arg1, _Args...>> {};
-
 } // namespace detail
 
 
@@ -139,7 +126,7 @@ struct vec : __vec_impl<_T, _N>
 		: base_type(_first, _other...) {}
 
 	template<typename... _Args, typename = std::enable_if_t<sizeof ...(_Args) == _N &&
-		detail::is_same_pack<value_type, std::remove_reference_t<std::remove_const_t<_Args>>...>::value>>
+		detail::is_pack_same<value_type, std::remove_reference_t<std::remove_const_t<_Args>>...>::value>>
 	constexpr vec(_Args... args) noexcept : base_type({args...}) {}
 
 	template<size_t _M, typename = std::enable_if_t<(_M > _N)>>
