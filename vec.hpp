@@ -157,14 +157,14 @@ struct vec : __vec_impl<_T, _N>
 
 	using glm_type = glm::vec<_N, value_type>;
 
-	constexpr explicit vec(glm_type const & _v) noexcept
-		: vec(*static_cast<this_type const *>(static_cast<void const *>(&_v))) {}
+	static constexpr this_type & from_glm(glm_type & _v) noexcept
+	{ *static_cast<this_type*>(static_cast<void*>(&_v)); }
 
-	constexpr operator glm_type & (void) noexcept
-	{ return *static_cast<glm_type*>(static_cast<void*>(this)); }
+	static constexpr this_type const & from_glm(glm_type const & _v) noexcept
+	{ *static_cast<this_type*>(static_cast<void*>(&_v)); }
 
-	constexpr glm_type & to_glm(void) noexcept { return *this; }
-	constexpr glm_type const & to_glm(void) const noexcept { return *this; }
+	constexpr glm_type & to_glm(void) noexcept { *static_cast<glm_type*>(static_cast<void*>(this)); }
+	constexpr glm_type const & to_glm(void) const noexcept { *static_cast<glm_type*>(static_cast<void*>(this)); }
 
 #endif
 
