@@ -87,7 +87,7 @@ struct vec : __vec_impl<_T, _N>
 {
 	using base_type  = __vec_impl<_T, _N>;
 	using value_type = typename base_type::value_type;
-	using this_type  = vec<value_type, _N>;
+	using self_type  = vec<value_type, _N>;
 
 	constexpr explicit vec(void) noexcept {}
 
@@ -109,15 +109,19 @@ struct vec : __vec_impl<_T, _N>
 	constexpr explicit vec(vec<_U, _N> const & _v) noexcept
 		: base_type(_v) {}
 
+	constexpr explicit vec(_T _v) : base_type(_v) {}
+
 #ifdef VX_GLM_EXT
 
 	using glm_type = glm::vec<_N, value_type>;
 
-	static constexpr this_type & from_glm(glm_type & _v) noexcept
-	{ return *static_cast<this_type*>(static_cast<void*>(&_v)); }
 
-	static constexpr this_type const & from_glm(glm_type const & _v) noexcept
-	{ return *static_cast<this_type const*>(static_cast<void const *>(&_v)); }
+	constexpr vec(glm_type & _v) noexcept
+		: self_type(*static_cast<self_type*>(static_cast<void*>(&_v))) {}
+
+	constexpr vec(glm_type const & _v) noexcept
+		: self_type(*static_cast<self_type const *>(static_cast<void const *>(&_v))) {}
+
 
 	constexpr glm_type & to_glm(void) noexcept
 	{ return *static_cast<glm_type*>(static_cast<void*>(this)); }
@@ -126,16 +130,6 @@ struct vec : __vec_impl<_T, _N>
 
 #endif
 
-	static constexpr vec<value_type, _N> one(void) noexcept
-	{ return static_cast<this_type>(base_type(1)); }
-
-	static constexpr vec<value_type, _N> zero(void) noexcept
-	{ return static_cast<this_type>(base_type(0)); }
-
-protected:
-
-	constexpr explicit vec(base_type const & _v) noexcept
-		: base_type(_v) {}
 };
 
 template<typename _T> using vec1 = vec<_T, 1>;
