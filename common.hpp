@@ -50,6 +50,18 @@ template<typename _Arg0, typename _Arg1, typename... _Args>
 struct is_pack_same<_Arg0, _Arg1, _Args...>
 	: __and<std::is_same<_Arg0, _Arg1>, is_pack_same<_Arg1, _Args...>> {};
 
+
+template<typename _T, _T...> struct __sum;
+template<typename _T> struct __sum<_T>
+{
+	static constexpr _T value = _T{};
+};
+template<typename _T, _T _Arg0, _T... _Args> struct __sum<_T, _Arg0, _Args...>
+{
+	static constexpr _T value = _Arg0 + __sum<_T, _Args...>::value;
+};
+
+
 } // namespace detail
 
 
@@ -63,17 +75,22 @@ struct types_pack
 };
 
 
-template<size_t...> struct index_seq {};
-template<size_t _N, size_t... _Indices>
-struct index_seq_make : index_seq_make<_N - 1, _N - 1, _Indices...> {};
-template<size_t... _Indices>
-struct index_seq_make<0, _Indices...> : index_seq<_Indices...> {};
+template<long ..._Args>
+struct long_sequence_pack
+{
+	using sum = detail::__sum<long, _Args...>;
+};
 
-template<size_t...> struct ones_seq {};
-template<size_t _N, size_t... _Values>
-struct ones_seq_make : ones_seq_make<_N - 1, 1, _Values...> {};
-template<size_t... _Values>
-struct ones_seq_make<0, _Values...> : ones_seq<_Values...> {};
+
+template<long _N, long... _Indices>
+struct index_sequence_make : index_sequence_make<_N - 1, _N - 1, _Indices...> {};
+template<long... _Indices>
+struct index_sequence_make<0, _Indices...> : long_sequence_pack<_Indices...> {};
+
+template<long _N, long... _Values>
+struct ones_sequence_make : ones_sequence_make<_N - 1, 1, _Values...> {};
+template<long... _Values>
+struct ones_sequence_make<0, _Values...> : long_sequence_pack<_Values...> {};
 
 
 } // namespace vx

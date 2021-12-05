@@ -15,22 +15,6 @@
 namespace vx
 {
 
-namespace detail
-{
-
-template<typename _T, _T...> struct sum;
-template<typename _T> struct sum<_T>
-{
-	static constexpr _T value = _T{};
-};
-template<typename _T, _T _Arg0, _T... _Args> struct sum<_T, _Arg0, _Args...>
-{
-	static constexpr _T value = _Arg0 + sum<_T, _Args...>::value;
-};
-
-} // namespace detail
-
-
 template<typename _T, size_t _N>
 struct __vec_impl : std::array<_T, _N>
 {
@@ -47,52 +31,52 @@ struct __vec_impl : std::array<_T, _N>
 	constexpr explicit __vec_impl(void) noexcept {}
 
 	template<size_t... _Values>
-	constexpr explicit __vec_impl(value_type _v, ones_seq<_Values...>) noexcept
+	constexpr explicit __vec_impl(value_type _v, long_sequence_pack<_Values...>) noexcept
 		: base_type{(_v * static_cast<value_type>(_Values))...} {}
 
 	constexpr explicit __vec_impl(value_type _v) noexcept
-		: __vec_impl(_v, ones_seq_make<_N>{}) {}
+		: __vec_impl(_v, ones_sequence_make<_N>{}) {}
 
 	template<size_t... _Indices>
-	constexpr explicit __vec_impl(value_type const (&_ar)[_N], index_seq<_Indices...>) noexcept
+	constexpr explicit __vec_impl(value_type const (&_ar)[_N], long_sequence_pack<_Indices...>) noexcept
 		: base_type{_ar[_Indices]...} {}
 
 	constexpr explicit __vec_impl(value_type const (&_ar)[_N]) noexcept
-		: __vec_impl(_ar, index_seq_make<_N>{}) {}
+		: __vec_impl(_ar, index_sequence_make<_N>{}) {}
 
 
 	template<size_t _M, size_t... _Indices1, size_t... _Indices2>
 	constexpr explicit __vec_impl(
-		__vec_impl<value_type, _M> const & _v1, index_seq<_Indices1...>,
-		__vec_impl<value_type, _N - _M> const & _v2, index_seq<_Indices2...>) noexcept
+		__vec_impl<value_type, _M> const & _v1, long_sequence_pack<_Indices1...>,
+		__vec_impl<value_type, _N - _M> const & _v2, long_sequence_pack<_Indices2...>) noexcept
 		: base_type{_v1.template get<_Indices1>()..., _v2.template get<_Indices2>()...} {}
 
 	template<size_t _M>
 	constexpr explicit __vec_impl(
 		__vec_impl<value_type, _M> const & _v1, __vec_impl<value_type, _N - _M> const & _v2) noexcept
-		: __vec_impl(_v1, index_seq_make<_M>{}, _v2, index_seq_make<_N - _M>{}) {}
+		: __vec_impl(_v1, index_sequence_make<_M>{}, _v2, index_sequence_make<_N - _M>{}) {}
 
 	template<size_t _M, size_t... _Args,
-		typename = std::enable_if_t<_N == detail::sum<size_t, _M, _Args...>::value>>
+		typename = std::enable_if_t<_N == long_sequence_pack<_M, _Args...>::sum::value>>
 	constexpr explicit __vec_impl(__vec_impl<value_type, _M> const & _first,
 		__vec_impl<value_type, _Args> const &... _other) noexcept
-		: __vec_impl(_first, __vec_impl<value_type, detail::sum<size_t, _Args...>::value>(_other...)) {}
+		: __vec_impl(_first, __vec_impl<value_type, long_sequence_pack<_Args...>::sum::value>(_other...)) {}
 
 	template<size_t _M, size_t... _Indices, typename = std::enable_if_t<(_M > _N)>>
-	constexpr explicit __vec_impl(__vec_impl<value_type, _M> const & _v, index_seq<_Indices...>) noexcept
+	constexpr explicit __vec_impl(__vec_impl<value_type, _M> const & _v, long_sequence_pack<_Indices...>) noexcept
 		: base_type({_v.template get<_Indices>()...}) {}
 
 	template<size_t _M, typename = std::enable_if_t<(_M > _N)>>
 	constexpr explicit __vec_impl(__vec_impl<value_type, _M> const & _v) noexcept
-		: __vec_impl(_v, index_seq_make<_N>{}) {}
+		: __vec_impl(_v, index_sequence_make<_N>{}) {}
 
 	template<typename _U, size_t... _Indices>
-	constexpr explicit __vec_impl(__vec_impl<_U, _N> const & _v, index_seq<_Indices...>) noexcept
+	constexpr explicit __vec_impl(__vec_impl<_U, _N> const & _v, long_sequence_pack<_Indices...>) noexcept
 		: base_type({_v.template get<_Indices>()...}) {}
 
 	template<typename _U>
 	constexpr explicit __vec_impl(__vec_impl<_U, _N> const & _v) noexcept
-		: __vec_impl(_v, index_seq_make<_N>{}) {}
+		: __vec_impl(_v, index_sequence_make<_N>{}) {}
 
 };
 
@@ -108,7 +92,7 @@ struct vec : __vec_impl<_T, _N>
 	constexpr explicit vec(void) noexcept {}
 
 	template<size_t _M, size_t... _Args,
-		typename = std::enable_if_t<_N == detail::sum<size_t, _M, _Args...>::value>>
+		typename = std::enable_if_t<_N == long_sequence_pack<_M, _Args...>::sum::value>>
 	constexpr explicit vec(vec<value_type, _M> const & _first,
 		vec<value_type, _Args> const &... _other) noexcept
 		: base_type(_first, _other...) {}
