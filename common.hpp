@@ -17,6 +17,9 @@ using boost::noncopyable;
 #else
 struct noncopyable
 {
+protected:
+	noncopyable(noncopyable const &) = delete;
+	noncopyable& operator= (noncopyable const &) = delete;
 };
 #endif
 
@@ -58,6 +61,19 @@ struct types_pack
 	template<typename _T>
 	using is_contain = detail::is_pack_contain<_T, _Args...>;
 };
+
+
+template<size_t...> struct index_seq {};
+template<size_t _N, size_t... _Indices>
+struct index_seq_make : index_seq_make<_N - 1, _N - 1, _Indices...> {};
+template<size_t... _Indices>
+struct index_seq_make<0, _Indices...> : index_seq<_Indices...> {};
+
+template<size_t...> struct ones_seq {};
+template<size_t _N, size_t... _Values>
+struct ones_seq_make : ones_seq_make<_N - 1, 1, _Values...> {};
+template<size_t... _Values>
+struct ones_seq_make<0, _Values...> : ones_seq<_Values...> {};
 
 
 } // namespace vx
