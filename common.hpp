@@ -1,6 +1,10 @@
 #ifndef VX_COMMON_HPP
 #define VX_COMMON_HPP
 
+#if __cplusplus < 201402L
+#error "vx supports c++14 and above"
+#endif
+
 #include <utility>
 #include <array>
 

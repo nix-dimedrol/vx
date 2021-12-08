@@ -1,8 +1,6 @@
 #ifndef VX_VEC_HPP
 #define VX_VEC_HPP
 
-#include <array>
-
 #include "common.hpp"
 
 #ifdef VX_GLM_EXT
