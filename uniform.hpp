@@ -6,11 +6,10 @@
 #endif
 
 #include <GL/gl.h>
-#include <GL/glext.h>
 
-#include "common.hpp"
+#include "utils.hpp"
 #include "vec.hpp"
-#include "mat.hpp"
+
 
 namespace vx
 {

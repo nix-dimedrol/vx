@@ -1,7 +1,7 @@
 #ifndef VX_VEC_HPP
 #define VX_VEC_HPP
 
-#include "common.hpp"
+#include "utils.hpp"
 
 #ifdef VX_GLM_EXT
 #include <glm/vec2.hpp>

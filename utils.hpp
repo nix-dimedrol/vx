@@ -73,6 +73,13 @@ struct __count
 	static constexpr size_t value = sizeof... (_Args);
 };
 
+
+template<size_t _N>
+struct __num
+{
+	static constexpr size_t value = _N;
+};
+
 } // namespace detail
 
 
@@ -107,6 +114,20 @@ struct ones_sequence_make<0, _Values...> : size_sequence_pack<_Values...> {};
 
 namespace _ct
 {
+
+
+template<typename _Predicate, size_t... _Args>
+void __for(_Predicate _pred, size_sequence_pack<_Args...>)
+{
+	int ret[]{0, ((void)_pred(detail::__num<_Args>{}), 0)...};
+}
+
+template<size_t _N, typename _Predicate>
+void __for(_Predicate _pred)
+{
+	__for(_pred, index_sequence_make<_N>{});
+}
+
 
 template<typename _T, size_t _N>
 struct s_array : std::array<_T, _N>
