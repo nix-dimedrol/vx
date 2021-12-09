@@ -1,5 +1,5 @@
-#ifndef VX_COMMON_HPP
-#define VX_COMMON_HPP
+#ifndef VX_UTILS_HPP
+#define VX_UTILS_HPP
 
 #if __cplusplus < 201402L
 #error "vx supports c++14 and above"
@@ -208,4 +208,4 @@ constexpr auto make_string(s_string<_Arg0> const & _first, s_string<_Args> const
 
 } // namespace vx
 
-#endif // COMMON_H
+#endif // VX_UTILS_HPP
