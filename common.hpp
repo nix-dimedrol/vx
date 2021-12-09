@@ -67,6 +67,12 @@ template<typename _T, _T _Arg0, _T... _Args> struct __sum<_T, _Arg0, _Args...>
 };
 
 
+template<typename _T, _T... _Args>
+struct __count
+{
+	static constexpr size_t value = sizeof... (_Args);
+};
+
 } // namespace detail
 
 
@@ -84,6 +90,7 @@ template<size_t ..._Args>
 struct size_sequence_pack
 {
 	using sum = detail::__sum<size_t, _Args...>;
+	using size = detail::__count<size_t, _Args...>;
 };
 
 
@@ -167,8 +174,34 @@ protected:
 		: base_type({_v.template get<_Indices>()...}) {}
 };
 
+
 template<size_t _N>
 using s_string = s_array<char, _N>;
+
+
+template<size_t _N>
+constexpr auto make_string(char const (&_arr)[_N]) noexcept
+{
+	return s_string<_N>(_arr);
+}
+
+constexpr auto make_string(char _s) noexcept
+{
+	return s_string<2>({_s, 0});
+}
+
+template<size_t _N, size_t _M>
+constexpr auto make_string(s_string<_N> const & _v1, s_string<_M> const & _v2) noexcept
+{
+	return s_string<_N + _M - 1>(s_string<_N - 1>(_v1), _v2);
+}
+
+template<size_t _Arg0, size_t... _Args, typename = std::enable_if_t<(sizeof... (_Args) > 1)>>
+constexpr auto make_string(s_string<_Arg0> const & _first, s_string<_Args> const &... _other) noexcept
+{
+	return make_string(_first, make_string(_other...));
+}
+
 
 }
 
