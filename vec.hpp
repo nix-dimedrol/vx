@@ -24,7 +24,7 @@ struct vec : _ct::s_array<_T, _N>
 	constexpr explicit vec(void) noexcept {}
 
 	template<size_t _M, size_t... _Args,
-		typename = std::enable_if_t<_N == size_sequence_pack<_M, _Args...>::sum::value>>
+		typename = std::enable_if_t<_N == sum<std::index_sequence<_M, _Args...>>::value>>
 	constexpr explicit vec(vec<value_type, _M> const & _first,
 		vec<value_type, _Args> const &... _other) noexcept
 		: base_type(_first, _other...) {}

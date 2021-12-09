@@ -66,14 +66,6 @@ template<typename _T, _T _Arg0, _T... _Args> struct __sum<_T, _Arg0, _Args...>
 	static constexpr _T value = _Arg0 + __sum<_T, _Args...>::value;
 };
 
-
-template<typename _T, _T... _Args>
-struct __count
-{
-	static constexpr size_t value = sizeof... (_Args);
-};
-
-
 template<size_t _N>
 struct __num
 {
@@ -81,6 +73,13 @@ struct __num
 };
 
 } // namespace detail
+
+
+template<typename>
+struct sum;
+
+template<typename _T, _T... _Args>
+struct sum<std::integer_sequence<_T, _Args...>> : detail::__sum<_T, _Args...> {};
 
 
 template<typename ..._Args>
@@ -93,23 +92,10 @@ struct types_pack
 };
 
 
-template<size_t ..._Args>
-struct size_sequence_pack
-{
-	using sum = detail::__sum<size_t, _Args...>;
-	using size = detail::__count<size_t, _Args...>;
-};
-
-
-template<size_t _N, size_t... _Indices>
-struct index_sequence_make : index_sequence_make<_N - 1, _N - 1, _Indices...> {};
-template<size_t... _Indices>
-struct index_sequence_make<0, _Indices...> : size_sequence_pack<_Indices...> {};
-
 template<size_t _N, size_t... _Values>
 struct ones_sequence_make : ones_sequence_make<_N - 1, 1, _Values...> {};
 template<size_t... _Values>
-struct ones_sequence_make<0, _Values...> : size_sequence_pack<_Values...> {};
+struct ones_sequence_make<0, _Values...> : std::index_sequence<_Values...> {};
 
 
 namespace _ct
@@ -117,7 +103,7 @@ namespace _ct
 
 
 template<typename _Predicate, size_t... _Args>
-void __for(_Predicate _pred, size_sequence_pack<_Args...>)
+void __for(_Predicate _pred, std::index_sequence<_Args...>)
 {
 	int ret[]{0, ((void)_pred(detail::__num<_Args>{}), 0)...};
 }
@@ -125,7 +111,7 @@ void __for(_Predicate _pred, size_sequence_pack<_Args...>)
 template<size_t _N, typename _Predicate>
 void __for(_Predicate _pred)
 {
-	__for(_pred, index_sequence_make<_N>{});
+	__for(_pred, std::make_index_sequence<_N>{});
 }
 
 
@@ -149,49 +135,49 @@ struct s_array : std::array<_T, _N>
 
 	template<size_t _M, typename = std::enable_if_t<(_N >= _M)>>
 	constexpr explicit s_array(value_type const (&_ar)[_M]) noexcept
-		: s_array(_ar, index_sequence_make<_M>{}) {}
+		: s_array(_ar, std::make_index_sequence<_M>{}) {}
 
 	template<size_t _M, size_t _L, typename = std::enable_if_t<(_N >= _M + _L)>>
 	constexpr explicit s_array(
 		s_array<value_type, _M> const & _v1, s_array<value_type, _L> const & _v2) noexcept
-		: s_array(_v1, index_sequence_make<_M>{}, _v2, index_sequence_make<_L>{}) {}
+		: s_array(_v1, std::make_index_sequence<_M>{}, _v2, std::make_index_sequence<_L>{}) {}
 
 	template<size_t _M, size_t... _Args,
-		typename = std::enable_if_t<_N >= size_sequence_pack<_M, _Args...>::sum::value>>
+		typename = std::enable_if_t<_N >= sum<std::index_sequence<_M, _Args...>>::value>>
 	constexpr explicit s_array(s_array<value_type, _M> const & _first,
 		s_array<value_type, _Args> const &... _other) noexcept
-		: s_array(_first, s_array<value_type, size_sequence_pack<_Args...>::sum::value>(_other...)) {}
+		: s_array(_first, s_array<value_type, sum<std::index_sequence<_Args...>>::value>(_other...)) {}
 
 	template<size_t _M, typename = std::enable_if_t<(_M > _N)>>
 	constexpr explicit s_array(s_array<value_type, _M> const & _v) noexcept
-		: s_array(_v, index_sequence_make<_N>{}) {}
+		: s_array(_v, std::make_index_sequence<_N>{}) {}
 
 	template<typename _U>
 	constexpr explicit s_array(s_array<_U, _N> const & _v) noexcept
-		: s_array(_v, index_sequence_make<_N>{}) {}
+		: s_array(_v, std::make_index_sequence<_N>{}) {}
 
 protected:
 
 	template<size_t... _Values>
-	constexpr explicit s_array(value_type _v, size_sequence_pack<_Values...>) noexcept
+	constexpr explicit s_array(value_type _v, std::index_sequence<_Values...>) noexcept
 		: base_type{static_cast<value_type>(_v * static_cast<value_type>(_Values))...} {}
 
 	template<size_t _M, size_t... _Indices>
-	constexpr explicit s_array(value_type const (&_ar)[_M], size_sequence_pack<_Indices...>) noexcept
+	constexpr explicit s_array(value_type const (&_ar)[_M], std::index_sequence<_Indices...>) noexcept
 		: base_type{_ar[_Indices]...} {}
 
 	template<size_t _M, size_t _L, size_t... _Indices1, size_t... _Indices2>
 	constexpr explicit s_array(
-		s_array<value_type, _M> const & _v1, size_sequence_pack<_Indices1...>,
-		s_array<value_type, _L> const & _v2, size_sequence_pack<_Indices2...>) noexcept
+		s_array<value_type, _M> const & _v1, std::index_sequence<_Indices1...>,
+		s_array<value_type, _L> const & _v2, std::index_sequence<_Indices2...>) noexcept
 		: base_type{_v1.template get<_Indices1>()..., _v2.template get<_Indices2>()...} {}
 
 	template<size_t _M, size_t... _Indices, typename = std::enable_if_t<(_M > _N)>>
-	constexpr explicit s_array(s_array<value_type, _M> const & _v, size_sequence_pack<_Indices...>) noexcept
+	constexpr explicit s_array(s_array<value_type, _M> const & _v, std::index_sequence<_Indices...>) noexcept
 		: base_type({_v.template get<_Indices>()...}) {}
 
 	template<typename _U, size_t... _Indices>
-	constexpr explicit s_array(s_array<_U, _N> const & _v, size_sequence_pack<_Indices...>) noexcept
+	constexpr explicit s_array(s_array<_U, _N> const & _v, std::index_sequence<_Indices...>) noexcept
 		: base_type({_v.template get<_Indices>()...}) {}
 };
 
