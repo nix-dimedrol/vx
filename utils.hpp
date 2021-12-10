@@ -117,11 +117,6 @@ struct s_array : std::array<_T, _N>
 	using reference       = typename base_type::reference;
 	using const_reference = typename base_type::const_reference;
 
-	template<size_t _M>
-	constexpr reference get(void) noexcept { return std::get<_M>(*this); }
-	template<size_t _M>
-	constexpr const_reference get(void) const noexcept { return std::get<_M>(*this); }
-
 	constexpr explicit s_array(void) noexcept {}
 
 	template<size_t _M, typename = std::enable_if_t<(_N >= _M)>>
@@ -157,15 +152,15 @@ protected:
 	constexpr explicit s_array(
 		s_array<value_type, _M> const & _v1, std::index_sequence<_Indices1...>,
 		s_array<value_type, _L> const & _v2, std::index_sequence<_Indices2...>) noexcept
-		: base_type{_v1.template get<_Indices1>()..., _v2.template get<_Indices2>()...} {}
+		: base_type{std::get<_Indices1>(_v1)..., std::get<_Indices2>(_v2)...} {}
 
 	template<size_t _M, size_t... _Indices, typename = std::enable_if_t<(_M > _N)>>
 	constexpr explicit s_array(s_array<value_type, _M> const & _v, std::index_sequence<_Indices...>) noexcept
-		: base_type({_v.template get<_Indices>()...}) {}
+		: base_type({std::get<_Indices>(_v)...}) {}
 
 	template<typename _U, size_t... _Indices>
 	constexpr explicit s_array(s_array<_U, _N> const & _v, std::index_sequence<_Indices...>) noexcept
-		: base_type({_v.template get<_Indices>()...}) {}
+		: base_type({std::get<_Indices>(_v)...}) {}
 };
 
 
@@ -196,10 +191,7 @@ constexpr auto make_string(s_string<_Arg0> const & _first, s_string<_Args> const
 	return make_string(_first, make_string(_other...));
 }
 
-
-}
-
-
+} // namespace _ct
 } // namespace vx
 
 #endif // VX_UTILS_HPP
