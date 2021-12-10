@@ -39,13 +39,13 @@ namespace detail
 template<typename...> struct __and;
 template<typename _T> struct __and<_T> : _T {};
 template<typename _Arg0, typename... _Args> struct __and<_Arg0, _Args...>
-	: std::bool_constant<_Arg0::value && __and<_Args...>::value> {};
+	: bool_constant<_Arg0::value && __and<_Args...>::value> {};
 
 
 template<typename...> struct __or;
 template<typename _T> struct __or<_T> : _T {};
 template<typename _Arg0, typename... _Args> struct __or<_Arg0, _Args...>
-	: std::bool_constant<_Arg0::value || __or<_Args...>::value> {};
+	: bool_constant<_Arg0::value || __or<_Args...>::value> {};
 
 
 template<typename _T, typename...> struct is_pack_contain : std::false_type {};
