@@ -72,19 +72,21 @@ template<typename _T, _T _Arg0, _T... _Args> struct __sum<_T, _Arg0, _Args...>
 };
 
 
-template<typename, typename, typename>
+template<typename>
 struct __if_impl;
 
-template<typename _Then, typename _Else>
-struct __if_impl<_Then, _Else, std::true_type>
+template<>
+struct __if_impl<std::true_type>
 {
-	static auto get(_Then&& _th, _Else&&) { return _th; }
+	template<typename _Then, typename _Else>
+	static constexpr auto get(_Then&& _th, _Else&&) { return _th; }
 };
 
-template<typename _Then, typename _Else>
-struct __if_impl<_Then, _Else, std::false_type>
+template<>
+struct __if_impl<std::false_type>
 {
-	static auto get(_Then&&, _Else&& _el) { return _el; }
+	template<typename _Then, typename _Else>
+	static constexpr auto get(_Then&&, _Else&& _el) { return _el; }
 };
 
 } // namespace detail
@@ -125,9 +127,9 @@ void __for(_Predicate _pred)
 
 
 template<typename _Cond, typename _Then, typename _Else>
-auto __if(_Then&& _th, _Else&& _el)
+constexpr auto __if(_Then&& _th, _Else&& _el)
 {
-	return detail::__if_impl<_Then, _Else, _Cond>::get(_th, _el);
+	return detail::__if_impl<_Cond>::get(_th, _el);
 }
 
 
