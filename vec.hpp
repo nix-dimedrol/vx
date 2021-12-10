@@ -84,13 +84,13 @@ constexpr glm::vec<_N, _T> const & to_glm(vec<_T, _N> const & _v) noexcept
 	return *static_cast<glm::vec<_N, _T> const *>(static_cast<void const *>(&_v));
 }
 
-template<typename _T, size_t _N>
+template<typename _T, glm::length_t _N>
 constexpr vec<_T, _N> & from_glm(glm::vec<_N, _T> & _v) noexcept
 {
 	return *static_cast<vec<_T, _N>*>(static_cast<void*>(&_v));
 }
 
-template<typename _T, size_t _N>
+template<typename _T, glm::length_t _N>
 constexpr vec<_T, _N> const & from_glm(glm::vec<_N, _T> const & _v) noexcept
 {
 	return *static_cast<vec<_T, _N> const *>(static_cast<void const *>(&_v));

@@ -39,13 +39,13 @@ constexpr glm::mat<_C, _R, _T> const & to_glm(mat<_T, _C, _R> const & _m) noexce
 	return *static_cast<glm::mat<_C, _R, _T> const *>(static_cast<void const *>(_m));
 }
 
-template<typename _T, size_t _C, size_t _R>
+template<typename _T, glm::length_t _C, glm::length_t _R>
 constexpr mat<_T, _C, _R> & from_glm(glm::mat<_C, _R, _T> & _m) noexcept
 {
 	return *static_cast<mat<_T, _C, _R>*>(static_cast<void*>(&_m));
 }
 
-template<typename _T, size_t _C, size_t _R>
+template<typename _T, glm::length_t _C, glm::length_t _R>
 constexpr mat<_T, _C, _R> const & from_glm(glm::mat<_C, _R, _T> const & _m) noexcept
 {
 	return *static_cast<mat<_T, _C, _R> const *>(static_cast<void const *>(&_m));
