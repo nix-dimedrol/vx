@@ -89,7 +89,19 @@ GLvoid load_uniform(GLint _loc, vec<_T, _N> const & _v)
 template<typename _T, size_t _N>
 GLvoid load_uniform(GLint _loc, size_t _cnt, vec<_T, _N> const * _arr)
 {
-	detail::__uniform_impl<vec<_T, _N>>::proc(_loc, _cnt, _arr);
+	detail::__uniform_impl<vec<_T, _N>>::proc(_loc, _cnt, reinterpret_cast<_T const *>(_arr));
+}
+
+template<typename _T, size_t _C, size_t _R>
+GLvoid load_uniform(GLint _loc, mat<_T, _C, _R> const & _m, bool _trsp = false)
+{
+	detail::__uniform_impl<mat<_T, _C, _R>>::proc(_loc, 1, _trsp, _m.data());
+}
+
+template<typename _T, size_t _C, size_t _R>
+GLvoid load_uniform(GLint _loc, size_t _cnt, mat<_T, _C, _R> const * _arr, bool _trsp = false)
+{
+	detail::__uniform_impl<mat<_T, _C, _R>>::proc(_loc, _cnt, _trsp, reinterpret_cast<_T const *>(_arr));
 }
 
 } // namespace gl
