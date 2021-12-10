@@ -66,10 +66,20 @@ template<typename _T, _T _Arg0, _T... _Args> struct __sum<_T, _Arg0, _Args...>
 	static constexpr _T value = _Arg0 + __sum<_T, _Args...>::value;
 };
 
-template<size_t _N>
-struct __num
+
+template<typename, typename, typename>
+struct __if_impl;
+
+template<typename _Then, typename _Else>
+struct __if_impl<_Then, _Else, std::true_type>
 {
-	static constexpr size_t value = _N;
+	static auto get(_Then&& _th, _Else&&) { return _th; }
+};
+
+template<typename _Then, typename _Else>
+struct __if_impl<_Then, _Else, std::false_type>
+{
+	static auto get(_Then&&, _Else&& _el) { return _el; }
 };
 
 } // namespace detail
@@ -92,6 +102,10 @@ struct types_pack
 };
 
 
+template<bool _V>
+using bool_constant = std::integral_constant<bool, _V>;
+
+
 namespace _ct
 {
 
@@ -99,13 +113,20 @@ namespace _ct
 template<typename _Predicate, size_t... _Args>
 void __for(_Predicate _pred, std::index_sequence<_Args...>)
 {
-	int ret[]{0, ((void)_pred(detail::__num<_Args>{}), 0)...};
+	int ret[]{0, ((void)_pred(std::integral_constant<size_t, _Args>{}), 0)...};
 }
 
 template<size_t _N, typename _Predicate>
 void __for(_Predicate _pred)
 {
 	__for(_pred, std::make_index_sequence<_N>{});
+}
+
+
+template<typename _Cond, typename _Then, typename _Else>
+auto __if(_Then&& _th, _Else&& _el)
+{
+	return detail::__if_impl<_Then, _Else, _Cond>::get(_th, _el);
 }
 
 
