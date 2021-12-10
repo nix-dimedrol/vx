@@ -92,12 +92,6 @@ struct types_pack
 };
 
 
-template<size_t _N, size_t... _Values>
-struct ones_sequence_make : ones_sequence_make<_N - 1, 1, _Values...> {};
-template<size_t... _Values>
-struct ones_sequence_make<0, _Values...> : std::index_sequence<_Values...> {};
-
-
 namespace _ct
 {
 
@@ -130,9 +124,6 @@ struct s_array : std::array<_T, _N>
 
 	constexpr explicit s_array(void) noexcept {}
 
-	constexpr explicit s_array(value_type _v) noexcept
-		: s_array(_v, ones_sequence_make<_N>{}) {}
-
 	template<size_t _M, typename = std::enable_if_t<(_N >= _M)>>
 	constexpr explicit s_array(value_type const (&_ar)[_M]) noexcept
 		: s_array(_ar, std::make_index_sequence<_M>{}) {}
@@ -157,10 +148,6 @@ struct s_array : std::array<_T, _N>
 		: s_array(_v, std::make_index_sequence<_N>{}) {}
 
 protected:
-
-	template<size_t... _Values>
-	constexpr explicit s_array(value_type _v, std::index_sequence<_Values...>) noexcept
-		: base_type{static_cast<value_type>(_v * static_cast<value_type>(_Values))...} {}
 
 	template<size_t _M, size_t... _Indices>
 	constexpr explicit s_array(value_type const (&_ar)[_M], std::index_sequence<_Indices...>) noexcept

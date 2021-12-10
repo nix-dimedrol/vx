@@ -41,7 +41,7 @@ struct vec : _ct::s_array<_T, _N>
 	constexpr explicit vec(vec<_U, _N> const & _v) noexcept
 		: base_type(_v) {}
 
-	constexpr explicit vec(_T _v) : base_type(_v) {}
+	constexpr explicit vec(_T _v) : vec(_v, std::make_index_sequence<_N>{}) {}
 
 #ifdef VX_GLM_EXT
 
@@ -62,6 +62,11 @@ struct vec : _ct::s_array<_T, _N>
 
 #endif
 
+protected:
+
+	template<size_t... _Values>
+	constexpr explicit vec(value_type _v, std::index_sequence<_Values...>) noexcept
+		: base_type({((void)_Values, _v)...}) {}
 };
 
 
