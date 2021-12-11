@@ -67,16 +67,29 @@ void __load_uniform_proc(_Predicate _pred)
 		_pred(impl_type::proc_name.data()));
 }
 
+
+template<typename _T, typename _Predicate>
+void __load_uniform_procs(_Predicate _pred)
+{
+	_ct::__for<4>([&](auto it) { __load_uniform_proc<vec<_T, it.value + 1>>(_pred); });
+	_ct::__for<3>([&](auto col) {
+		_ct::__for<3>([&](auto row){ __load_uniform_proc<mat<_T, col.value + 2, row.value + 2>>(_pred);});
+	});
+}
+
+template<typename _Predicate, typename... _Args>
+void __load_uniform_procs(_Predicate _pred, types_pack<_Args...>)
+{
+	int ret[]{0, ((void)__load_uniform_procs<_Args>(_pred), 0)...};
+}
+
 } // namespace details
 
 
-template<typename _T, typename _Predicate>
+template<typename _Predicate>
 void load_uniform_procs(_Predicate _pred)
 {
-	_ct::__for<4>([&](auto it) { detail::__load_uniform_proc<vec<_T, it.value + 1>>(_pred); });
-	_ct::__for<3>([&](auto col) {
-		_ct::__for<3>([&](auto row){ detail::__load_uniform_proc<mat<_T, col.value + 2, row.value + 2>>(_pred);});
-	});
+	detail::__load_uniform_procs(_pred, valid_types{});
 }
 
 
