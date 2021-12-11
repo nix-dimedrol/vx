@@ -12,6 +12,12 @@
 #include <boost/utility.hpp>
 #endif
 
+#if __cplusplus >= 201703L
+#include <string_view>
+#elif defined (VX_USE_BOOST)
+#include <boost/utility/string_view.hpp>
+#endif
+
 namespace vx
 {
 
@@ -32,6 +38,14 @@ protected:
 	noncopyable& operator= (noncopyable const &) = delete;
 };
 #endif
+
+
+#if __cplusplus >= 201703L
+using std::string_view;
+#elif defined (VX_USE_BOOST)
+using boost::string_view;
+#endif
+
 
 namespace detail
 {
