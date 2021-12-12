@@ -8,8 +8,16 @@
 #include <GL/gl.h>
 
 #include "utils.hpp"
+
+#ifdef VX_USE_GLM_TYPES
+#include <glm/matrix.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#else
 #include "vec.hpp"
 #include "mat.hpp"
+#endif
 
 
 namespace vx
@@ -28,6 +36,11 @@ constexpr auto __get_proc_type_suffix(void) noexcept;
 template<> constexpr auto __get_proc_type_suffix<float>(void) noexcept { return _ct::make_string('f'); }
 template<> constexpr auto __get_proc_type_suffix<int>(void) noexcept { return _ct::make_string('i'); }
 
+
+#ifdef VX_USE_GLM_TYPES
+template<typename, size_t> struct vec {};
+template<typename, size_t, size_t> struct mat{};
+#endif
 
 template<typename>
 struct __uniform_impl;
@@ -92,6 +105,37 @@ void load_uniform_procs(_Predicate _pred)
 	detail::__load_uniform_procs(_pred, valid_types{});
 }
 
+#ifdef VX_USE_GLM_TYPES
+
+template<typename _T, glm::length_t _N>
+GLvoid load_uniform(GLint _loc, glm::vec<_N, _T> const & _v)
+{
+	detail::__uniform_impl<detail::vec<_T, _N>>::proc(_loc, 1,
+		reinterpret_cast<_T const *>(&_v));
+}
+
+template<typename _T, glm::length_t _N>
+GLvoid load_uniform(GLint _loc, size_t _cnt, glm::vec<_N, _T> const * _arr)
+{
+	detail::__uniform_impl<detail::vec<_T, _N>>::proc(_loc, _cnt,
+		reinterpret_cast<_T const *>(_arr));
+}
+
+template<typename _T, glm::length_t _C, glm::length_t _R>
+GLvoid load_uniform(GLint _loc, glm::mat<_C, _R, _T> const & _m, bool _trsp = false)
+{
+	detail::__uniform_impl<detail::mat<_T, _C, _R>>::proc(_loc, 1, _trsp,
+		reinterpret_cast<_T const *>(&_m));
+}
+
+template<typename _T, glm::length_t _C, glm::length_t _R>
+GLvoid load_uniform(GLint _loc, size_t _cnt, glm::mat<_C, _R, _T> const * _arr, bool _trsp = false)
+{
+	detail::__uniform_impl<detail::mat<_T, _C, _R>>::proc(_loc, _cnt, _trsp,
+		reinterpret_cast<_T const *>(_arr));
+}
+
+#else
 
 template<typename _T, size_t _N>
 GLvoid load_uniform(GLint _loc, vec<_T, _N> const & _v)
@@ -116,6 +160,8 @@ GLvoid load_uniform(GLint _loc, size_t _cnt, mat<_T, _C, _R> const * _arr, bool 
 {
 	detail::__uniform_impl<mat<_T, _C, _R>>::proc(_loc, _cnt, _trsp, reinterpret_cast<_T const *>(_arr));
 }
+
+#endif
 
 } // namespace gl
 } // namespace vx
