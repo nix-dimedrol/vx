@@ -90,28 +90,28 @@ void load_uniform_procs(_Predicate _pred)
 template<typename _T, glm::length_t _N>
 GLvoid load_uniform(GLint _loc, glm::vec<_N, _T> const & _v)
 {
-	__func<detail::__impl_uniform<detail::vec<_T, _N>>>::proc(_loc, 1,
+	_tfunc<detail::__impl_uniform<detail::vec<_T, _N>>>::proc(_loc, 1,
 		reinterpret_cast<_T const *>(&_v));
 }
 
 template<typename _T, glm::length_t _N>
 GLvoid load_uniform(GLint _loc, size_t _cnt, glm::vec<_N, _T> const * _arr)
 {
-	__func<detail::__impl_uniform<detail::vec<_T, _N>>>::proc(_loc, _cnt,
+	_tfunc<detail::__impl_uniform<detail::vec<_T, _N>>>::proc(_loc, _cnt,
 		reinterpret_cast<_T const *>(_arr));
 }
 
 template<typename _T, glm::length_t _C, glm::length_t _R>
 GLvoid load_uniform(GLint _loc, glm::mat<_C, _R, _T> const & _m, bool _trsp = false)
 {
-	__func<detail::__impl_uniform<detail::mat<_T, _C, _R>>>::proc(_loc, 1, _trsp,
+	_tfunc<detail::__impl_uniform<detail::mat<_T, _C, _R>>>::proc(_loc, 1, _trsp,
 		reinterpret_cast<_T const *>(&_m));
 }
 
 template<typename _T, glm::length_t _C, glm::length_t _R>
 GLvoid load_uniform(GLint _loc, size_t _cnt, glm::mat<_C, _R, _T> const * _arr, bool _trsp = false)
 {
-	__func<detail::__impl_uniform<detail::mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
+	_tfunc<detail::__impl_uniform<detail::mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
 		reinterpret_cast<_T const *>(_arr));
 }
 
@@ -120,26 +120,26 @@ GLvoid load_uniform(GLint _loc, size_t _cnt, glm::mat<_C, _R, _T> const * _arr, 
 template<typename _T, size_t _N>
 GLvoid load_uniform(GLint _loc, vec<_T, _N> const & _v)
 {
-	__func<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, 1, _v.data());
+	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, 1, _v.data());
 }
 
 template<typename _T, size_t _N>
 GLvoid load_uniform(GLint _loc, size_t _cnt, vec<_T, _N> const * _arr)
 {
-	__func<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, _cnt,
+	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, _cnt,
 		reinterpret_cast<_T const *>(_arr));
 }
 
 template<typename _T, size_t _C, size_t _R>
 GLvoid load_uniform(GLint _loc, mat<_T, _C, _R> const & _m, bool _trsp = false)
 {
-	__func<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, 1, _trsp, _m.data());
+	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, 1, _trsp, _m.data());
 }
 
 template<typename _T, size_t _C, size_t _R>
 GLvoid load_uniform(GLint _loc, size_t _cnt, mat<_T, _C, _R> const * _arr, bool _trsp = false)
 {
-	__func<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
+	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
 		reinterpret_cast<_T const *>(_arr));
 }
 

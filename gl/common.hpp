@@ -23,18 +23,18 @@ namespace gl
 {
 
 template<typename _T>
-struct __func : _T
+struct _tfunc : _T
 {
 	using proc_type = typename _T::proc_type;
 	static proc_type proc;
 };
-template<typename _T> typename __func<_T>::proc_type __func<_T>::proc = nullptr;
+template<typename _T> typename _tfunc<_T>::proc_type _tfunc<_T>::proc = nullptr;
 
 
 template<typename _T, typename _Predicate>
 void __load_proc(_Predicate _pred)
 {
-	using impl_type = __func<_T>;
+	using impl_type = _tfunc<_T>;
 	impl_type::proc = reinterpret_cast<typename impl_type::proc_type>(
 		_pred(impl_type::proc_name.data()));
 }
