@@ -1,10 +1,6 @@
 #ifndef VX_GL_UNIFORM_HPP
 #define VX_GL_UNIFORM_HPP
 
-#if __cplusplus < 201703L
-#error "vx_gl supports c++17 and above"
-#endif
-
 
 #include "common.hpp"
 
