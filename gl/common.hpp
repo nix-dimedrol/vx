@@ -45,9 +45,8 @@ void __load_procs(_Predicate _pred, types_pack<_Args...>)
 	int ret[]{0, ((void)__load_proc<_Args>(_pred), 0)...};
 }
 
-
-}
-}
+} // namespace vx
+} // namespace gl
 
 
 #endif // VX_GL_COMMON_HPP
