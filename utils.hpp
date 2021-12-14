@@ -36,43 +36,50 @@ struct noncopyable
 protected:
 	noncopyable(noncopyable const &) = delete;
 	noncopyable& operator= (noncopyable const &) = delete;
+
+	noncopyable(void) = default;
 };
 #endif
 
 
 #if __cplusplus >= 201703L
 using std::string_view;
-#elif defined (VX_USE_BOOST)
+using std::conjunction;
+using std::disjunction;
+#else
+
+#ifdef VX_USE_BOOST
 using boost::string_view;
+#endif
+
+template<typename...> struct conjunction;
+template<typename _T> struct conjunction<_T> : _T {};
+template<typename _Arg0, typename... _Args> struct conjunction<_Arg0, _Args...>
+	: bool_constant<_Arg0::value && conjunction<_Args...>::value> {};
+
+
+template<typename...> struct disjunction;
+template<typename _T> struct disjunction<_T> : _T {};
+template<typename _Arg0, typename... _Args> struct disjunction<_Arg0, _Args...>
+	: bool_constant<_Arg0::value || disjunction<_Args...>::value> {};
+
 #endif
 
 
 namespace detail
 {
 
-template<typename...> struct __and;
-template<typename _T> struct __and<_T> : _T {};
-template<typename _Arg0, typename... _Args> struct __and<_Arg0, _Args...>
-	: bool_constant<_Arg0::value && __and<_Args...>::value> {};
-
-
-template<typename...> struct __or;
-template<typename _T> struct __or<_T> : _T {};
-template<typename _Arg0, typename... _Args> struct __or<_Arg0, _Args...>
-	: bool_constant<_Arg0::value || __or<_Args...>::value> {};
-
-
 template<typename _T, typename...> struct is_pack_contain : std::false_type {};
 template<typename _T, typename _Arg, typename... _Args>
 struct is_pack_contain<_T, _Arg, _Args...>
-	: __or<std::is_same<_T, _Arg>, is_pack_contain<_T, _Args...>> {};
+	: disjunction<std::is_same<_T, _Arg>, is_pack_contain<_T, _Args...>> {};
 
 
 template<typename...> struct is_pack_same;
 template<typename _T> struct is_pack_same<_T> : std::true_type {};
 template<typename _Arg0, typename _Arg1, typename... _Args>
 struct is_pack_same<_Arg0, _Arg1, _Args...>
-	: __and<std::is_same<_Arg0, _Arg1>, is_pack_same<_Arg1, _Args...>> {};
+	: conjunction<std::is_same<_Arg0, _Arg1>, is_pack_same<_Arg1, _Args...>> {};
 
 
 template<typename _T, _T...> struct __sum;
