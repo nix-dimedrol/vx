@@ -48,107 +48,77 @@ void load_shader_procs(_Predicate _pred)
 
 struct program;
 
-struct shader : noncopyable
+struct shader : __handling_entity<GLuint, shader>
 {
+	using base_type = __handling_entity<GLuint, shader>;
+
+	explicit shader(void) : base_type({}) {}
+
 	template<typename _Logbuf>
 	explicit shader(GLenum _spec, string_view const & _src, _Logbuf & _log)
-		: _M_handler(_tfunc<__impl_create_shader>::proc(_spec))
+		: base_type(_tfunc<__impl_create_shader>::proc(_spec))
 	{
 		GLint src_size = _src.size();
 		GLchar const * src_data = _src.data();
-		_tfunc<__impl_shader_source>::proc(_M_handler, 1, &src_data, &src_size);
-		_tfunc<__impl_compile_shader>::proc(_M_handler);
+		_tfunc<__impl_shader_source>::proc(handle(), 1, &src_data, &src_size);
+		_tfunc<__impl_compile_shader>::proc(handle());
 		GLint is_compiled{};
-		_tfunc<__impl_get_shader_iv>::proc(_M_handler, GL_COMPILE_STATUS, &is_compiled);
+		_tfunc<__impl_get_shader_iv>::proc(handle(), GL_COMPILE_STATUS, &is_compiled);
 		if (is_compiled == GL_TRUE) return;
 		GLint log_length{};
-		_tfunc<__impl_get_shader_iv>::proc(_M_handler, GL_INFO_LOG_LENGTH, &log_length);
-		_tfunc<__impl_get_shader_infolog>::proc(_M_handler, log_length, &log_length, _log.get(log_length));
-		_tfunc<__impl_delete_shader>::proc(_M_handler);
-		_M_handler = 0;
+		_tfunc<__impl_get_shader_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
+		_tfunc<__impl_get_shader_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
+		_tfunc<__impl_delete_shader>::proc(handle());
+		handle() = 0;
 	}
 
-	explicit shader(shader && _other)
+	void destroy(void)
 	{
-		_M_handler = _other._M_handler;
-		_other._M_handler = 0;
+		if (handle()) _tfunc<__impl_delete_shader>::proc(handle());
+		handle() = 0;
 	}
 
-	shader & operator= (shader && _other)
-	{
-		_M_handler = _other._M_handler;
-		_other._M_handler = 0;
-		return *this;
-	}
-
-	constexpr explicit operator bool (void) noexcept { return bool(_M_handler); }
-	constexpr bool operator! (void) noexcept { return !static_cast<bool>(*this); }
-
-	~shader(void) { if (_M_handler) _tfunc<__impl_delete_shader>::proc(_M_handler); }
-
-protected:
-
-	GLuint get_handler(void) const { return _M_handler; }
-
-private:
-
-	GLuint _M_handler;
-
-	friend program;
+	GLuint get_handle(void) const { return handle(); }
 };
 
 
-struct program : noncopyable
+struct program : __handling_entity<GLuint, program>
 {
-	explicit program(void) : _M_handler{} {}
+	using base_type = __handling_entity<GLuint, program>;
+
+	explicit program(void) : base_type({}) {}
 
 	template<typename _Logbug, typename... _Args, typename = std::enable_if_t<
 		types_pack<shader, std::remove_reference_t<std::remove_const_t<_Args>>...>::is_same::value>>
 	explicit program(_Logbug & _log, _Args const &&... _shaders)
-		: _M_handler(_tfunc<__impl_create_program>::proc())
+		: base_type(_tfunc<__impl_create_program>::proc())
 	{
-		(_tfunc<__impl_attach_shader>::proc(_M_handler, _shaders.get_handler()), ...);
-		_tfunc<__impl_link_program>::proc(_M_handler);
+		(_tfunc<__impl_attach_shader>::proc(handle(), _shaders.get_handle()), ...);
+		_tfunc<__impl_link_program>::proc(handle());
 		GLint is_linked{};
-		_tfunc<__impl_get_program_iv>::proc(_M_handler, GL_LINK_STATUS, &is_linked);
+		_tfunc<__impl_get_program_iv>::proc(handle(), GL_LINK_STATUS, &is_linked);
 		if (is_linked == GL_TRUE)
 		{
-			(_tfunc<__impl_detach_shader>::proc(_M_handler, _shaders.get_handler()), ...);
+			(_tfunc<__impl_detach_shader>::proc(handle(), _shaders.get_handle()), ...);
 			return;
 		}
 		GLint log_length{};
-		_tfunc<__impl_get_program_iv>::proc(_M_handler, GL_INFO_LOG_LENGTH, &log_length);
-		_tfunc<__impl_get_program_infolog>::proc(_M_handler, log_length, &log_length, _log.get(log_length));
-		_tfunc<__impl_delete_program>::proc(_M_handler);
-		_M_handler = 0;
+		_tfunc<__impl_get_program_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
+		_tfunc<__impl_get_program_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
+		_tfunc<__impl_delete_program>::proc(handle());
+		handle() = 0;
 	}
 
-	explicit program(program && _other)
+	void destroy(void)
 	{
-		_M_handler = _other._M_handler;
-		_other._M_handler = 0;
+		if (handle()) _tfunc<__impl_delete_shader>::proc(handle());
+		handle() = 0;
 	}
 
-	program & operator= (program && _other)
-	{
-		_M_handler = _other._M_handler;
-		_other._M_handler = 0;
-		return *this;
-	}
-
-	void use(void) { _tfunc<__impl_use_program>::proc(_M_handler); }
+	void use(void) { _tfunc<__impl_use_program>::proc(handle()); }
 
 	GLint get_uniform_location(string_view const & _name)
-	{ return _tfunc<__impl_get_uniform_location>::proc(_M_handler, _name.data()); }
-
-	constexpr explicit operator bool (void) noexcept { return bool(_M_handler); }
-	constexpr bool operator! (void) noexcept { return !static_cast<bool>(*this); }
-
-	~program(void) { if (_M_handler) _tfunc<__impl_delete_program>::proc(_M_handler); }
-
-private:
-
-	GLuint _M_handler;
+	{ return _tfunc<__impl_get_uniform_location>::proc(handle(), _name.data()); }
 };
 
 } // namespace gl

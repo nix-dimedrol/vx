@@ -9,7 +9,7 @@
 
 #include <GL/gl.h>
 
-#include "utils.hpp"
+#include "../utils.hpp"
 
 
 #define __VX_GL_DECL_PROC(impl_name, _proc_type, _proc_name) struct __impl_ ## impl_name { \
