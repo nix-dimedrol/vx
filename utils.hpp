@@ -142,6 +142,7 @@ struct __handling_entity : noncopyable
 
 	self_type & operator= (self_type && _other)
 	{
+		if (this == &_other) return *this;
 		if (*this) static_cast<derived_type*>(this)->destroy();
 		_M_handle = std::move(_other._M_handle);
 		_other._M_handle = handle_type{};
@@ -155,10 +156,10 @@ struct __handling_entity : noncopyable
 
 protected:
 
-	constexpr handle_type & handle(void) { return _M_handle; }
-	constexpr handle_type const & handle(void) const { return  _M_handle; }
+	constexpr handle_type & handle(void) noexcept { return _M_handle; }
+	constexpr handle_type const & handle(void) const noexcept { return  _M_handle; }
 
-	explicit __handling_entity(handle_type const & _value) : _M_handle(_value) {}
+	explicit __handling_entity(handle_type const & _value = handle_type{}) : _M_handle(_value) {}
 
 private:
 

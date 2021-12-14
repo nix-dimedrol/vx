@@ -52,7 +52,7 @@ struct shader : __handling_entity<GLuint, shader>
 {
 	using base_type = __handling_entity<GLuint, shader>;
 
-	explicit shader(void) : base_type({}) {}
+	explicit shader(void) = default;
 
 	template<typename _Logbuf>
 	explicit shader(GLenum _spec, string_view const & _src, _Logbuf & _log)
@@ -68,8 +68,7 @@ struct shader : __handling_entity<GLuint, shader>
 		GLint log_length{};
 		_tfunc<__impl_get_shader_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
 		_tfunc<__impl_get_shader_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
-		_tfunc<__impl_delete_shader>::proc(handle());
-		handle() = 0;
+		destroy();
 	}
 
 	void destroy(void)
@@ -86,7 +85,7 @@ struct program : __handling_entity<GLuint, program>
 {
 	using base_type = __handling_entity<GLuint, program>;
 
-	explicit program(void) : base_type({}) {}
+	explicit program(void) = default;
 
 	template<typename _Logbug, typename... _Args, typename = std::enable_if_t<
 		types_pack<shader, std::remove_reference_t<std::remove_const_t<_Args>>...>::is_same::value>>
@@ -105,8 +104,7 @@ struct program : __handling_entity<GLuint, program>
 		GLint log_length{};
 		_tfunc<__impl_get_program_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
 		_tfunc<__impl_get_program_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
-		_tfunc<__impl_delete_program>::proc(handle());
-		handle() = 0;
+		destroy();
 	}
 
 	void destroy(void)
