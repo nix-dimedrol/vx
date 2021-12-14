@@ -111,8 +111,11 @@ struct program : noncopyable
 		_tfunc<__impl_link_program>::proc(_M_handler);
 		GLint is_linked{};
 		_tfunc<__impl_get_program_iv>::proc(_M_handler, GL_LINK_STATUS, &is_linked);
-		(_tfunc<__impl_detach_shader>::proc(_M_handler, _shaders.get_handler()), ...);
-		if (is_linked == GL_TRUE) return;
+		if (is_linked == GL_TRUE)
+		{
+			(_tfunc<__impl_detach_shader>::proc(_M_handler, _shaders.get_handler()), ...);
+			return;
+		}
 		GLint log_length{};
 		_tfunc<__impl_get_program_iv>::proc(_M_handler, GL_INFO_LOG_LENGTH, &log_length);
 		_tfunc<__impl_get_program_infolog>::proc(_M_handler, log_length, &log_length, _log.get(log_length));
