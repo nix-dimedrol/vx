@@ -52,7 +52,7 @@ struct shader : noncopyable
 {
 	template<typename _Logbuf>
 	explicit shader(GLenum _spec, string_view const & _src, _Logbuf & _log)
-		: _M_spec(_spec), _M_handler(_tfunc<__impl_create_shader>::proc(_spec))
+		: _M_handler(_tfunc<__impl_create_shader>::proc(_spec))
 	{
 		GLint src_size = _src.size();
 		GLchar const * src_data = _src.data();
@@ -86,15 +86,12 @@ struct shader : noncopyable
 
 	~shader(void) { if (_M_handler) _tfunc<__impl_delete_shader>::proc(_M_handler); }
 
-	GLenum get_spec(void) const { return _M_spec; }
-
 protected:
 
 	GLuint get_handler(void) const { return _M_handler; }
 
 private:
 
-	GLenum _M_spec;
 	GLuint _M_handler;
 
 	friend program;
