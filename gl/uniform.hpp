@@ -22,6 +22,18 @@ namespace gl
 
 using valid_types = types_pack<float, int>;
 
+
+#ifdef VX_USE_GLM_TYPES
+using glm::length_t;
+template<typename _T, length_t _N>
+using vec = glm::vec<_N, _T>;
+template<typename _T, length_t _C, length_t _R>
+using mat = glm::mat<_C, _R, _T>;
+#else
+using length_t = size_t;
+#endif
+
+
 namespace detail
 {
 
@@ -33,14 +45,12 @@ template<> constexpr auto __get_proc_type_suffix<int>(void) noexcept { return _c
 
 
 #ifdef VX_USE_GLM_TYPES
-template<typename, size_t> struct vec {};
-template<typename, size_t, size_t> struct mat{};
 #endif
 
 template<typename>
 struct __impl_uniform;
 
-template<typename _T, size_t _N>
+template<typename _T, length_t _N>
 struct __impl_uniform<vec<_T, _N>>
 {
 	using proc_type = std::enable_if_t<valid_types::is_contain<_T>::value,
@@ -49,7 +59,7 @@ struct __impl_uniform<vec<_T, _N>>
 		_ct::make_string(char(_N + '0')), __get_proc_type_suffix<_T>(), _ct::make_string('v'));
 };
 
-template<typename _T, size_t _C, size_t _R>
+template<typename _T, length_t _C, length_t _R>
 struct __impl_uniform<mat<_T, _C, _R>>
 {
 	using proc_type = std::enable_if_t<valid_types::is_contain<_T>::value,
@@ -79,71 +89,41 @@ void __load_uniform_procs(_Predicate _pred, types_pack<_Args...>)
 } // namespace details
 
 
+
 template<typename _Predicate>
 void load_uniform_procs(_Predicate _pred)
 {
 	detail::__load_uniform_procs(_pred, valid_types{});
 }
 
-#ifdef VX_USE_GLM_TYPES
 
-template<typename _T, glm::length_t _N>
-GLvoid load_uniform(GLint _loc, glm::vec<_N, _T> const & _v)
+template<typename _T, length_t _N>
+GLvoid load_uniform(GLint _loc, vec<_T, _N> const & _v)
 {
-	_tfunc<detail::__impl_uniform<detail::vec<_T, _N>>>::proc(_loc, 1,
+	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, 1,
 		reinterpret_cast<_T const *>(&_v));
 }
 
-template<typename _T, glm::length_t _N>
-GLvoid load_uniform(GLint _loc, size_t _cnt, glm::vec<_N, _T> const * _arr)
-{
-	_tfunc<detail::__impl_uniform<detail::vec<_T, _N>>>::proc(_loc, _cnt,
-		reinterpret_cast<_T const *>(_arr));
-}
-
-template<typename _T, glm::length_t _C, glm::length_t _R>
-GLvoid load_uniform(GLint _loc, glm::mat<_C, _R, _T> const & _m, bool _trsp = false)
-{
-	_tfunc<detail::__impl_uniform<detail::mat<_T, _C, _R>>>::proc(_loc, 1, _trsp,
-		reinterpret_cast<_T const *>(&_m));
-}
-
-template<typename _T, glm::length_t _C, glm::length_t _R>
-GLvoid load_uniform(GLint _loc, size_t _cnt, glm::mat<_C, _R, _T> const * _arr, bool _trsp = false)
-{
-	_tfunc<detail::__impl_uniform<detail::mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
-		reinterpret_cast<_T const *>(_arr));
-}
-
-#else
-
-template<typename _T, size_t _N>
-GLvoid load_uniform(GLint _loc, vec<_T, _N> const & _v)
-{
-	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, 1, _v.data());
-}
-
-template<typename _T, size_t _N>
+template<typename _T, length_t _N>
 GLvoid load_uniform(GLint _loc, size_t _cnt, vec<_T, _N> const * _arr)
 {
 	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, _cnt,
 		reinterpret_cast<_T const *>(_arr));
 }
 
-template<typename _T, size_t _C, size_t _R>
+template<typename _T, length_t _C, length_t _R>
 GLvoid load_uniform(GLint _loc, mat<_T, _C, _R> const & _m, bool _trsp = false)
 {
-	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, 1, _trsp, _m.data());
+	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, 1, _trsp,
+		reinterpret_cast<_T const *>(&_m));
 }
 
-template<typename _T, size_t _C, size_t _R>
+template<typename _T, length_t _C, length_t _R>
 GLvoid load_uniform(GLint _loc, size_t _cnt, mat<_T, _C, _R> const * _arr, bool _trsp = false)
 {
 	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
 		reinterpret_cast<_T const *>(_arr));
 }
-
-#endif
 
 } // namespace gl
 } // namespace vx
