@@ -143,13 +143,13 @@ struct __handling_entity : noncopyable
 	self_type & operator= (self_type && _other)
 	{
 		if (this == &_other) return *this;
-		if (*this) derived_type::handle_delete(_M_handle);
+		if (*this) derived_type::destroy_resource(_M_handle);
 		_M_handle = std::move(_other._M_handle);
 		_other._M_handle = handle_type{};
 		return *this;
 	}
 
-	~__handling_entity(void) { if (*this) derived_type::handle_delete(_M_handle); }
+	~__handling_entity(void) { if (*this) derived_type::destroy_resource(_M_handle); }
 
 	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(_M_handle); }
 	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
@@ -161,7 +161,7 @@ protected:
 
 	void destroy(void)
 	{
-		derived_type::handle_delete(_M_handle);
+		derived_type::destroy_resource(_M_handle);
 		_M_handle = 0;
 	}
 

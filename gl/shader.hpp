@@ -68,10 +68,10 @@ struct shader : __handling_entity<GLuint, shader>
 		GLint log_length{};
 		_tfunc<__impl_get_shader_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
 		_tfunc<__impl_get_shader_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
-		destroy();
+		this->destroy();
 	}
 
-	static void handle_delete(GLuint _val) { _tfunc<__impl_delete_shader>::proc(_val); }
+	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_shader>::proc(_val); }
 
 	GLuint get_handle(void) const { return handle(); }
 };
@@ -90,7 +90,7 @@ struct program : __handling_entity<GLuint, program>
 	{
 		if (!(_shaders.get_handle() && ...))
 		{
-			destroy();
+			this->destroy();
 			return;
 		}
 		(_tfunc<__impl_attach_shader>::proc(handle(), _shaders.get_handle()), ...);
@@ -105,10 +105,10 @@ struct program : __handling_entity<GLuint, program>
 		GLint log_length{};
 		_tfunc<__impl_get_program_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
 		_tfunc<__impl_get_program_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
-		destroy();
+		this->destroy();
 	}
 
-	static void handle_delete(GLuint _val) { _tfunc<__impl_delete_program>::proc(_val); }
+	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_program>::proc(_val); }
 
 	void use(void) { _tfunc<__impl_use_program>::proc(handle()); }
 
