@@ -71,11 +71,7 @@ struct shader : __handling_entity<GLuint, shader>
 		destroy();
 	}
 
-	void destroy(void)
-	{
-		if (handle()) _tfunc<__impl_delete_shader>::proc(handle());
-		handle() = 0;
-	}
+	static void handle_delete(GLuint _val) { _tfunc<__impl_delete_shader>::proc(_val); }
 
 	GLuint get_handle(void) const { return handle(); }
 };
@@ -92,6 +88,11 @@ struct program : __handling_entity<GLuint, program>
 	explicit program(_Logbug & _log, _Args const &&... _shaders)
 		: base_type(_tfunc<__impl_create_program>::proc())
 	{
+		if (!(_shaders.get_handle() && ...))
+		{
+			destroy();
+			return;
+		}
 		(_tfunc<__impl_attach_shader>::proc(handle(), _shaders.get_handle()), ...);
 		_tfunc<__impl_link_program>::proc(handle());
 		GLint is_linked{};
@@ -107,11 +108,7 @@ struct program : __handling_entity<GLuint, program>
 		destroy();
 	}
 
-	void destroy(void)
-	{
-		if (handle()) _tfunc<__impl_delete_shader>::proc(handle());
-		handle() = 0;
-	}
+	static void handle_delete(GLuint _val) { _tfunc<__impl_delete_program>::proc(_val); }
 
 	void use(void) { _tfunc<__impl_use_program>::proc(handle()); }
 
