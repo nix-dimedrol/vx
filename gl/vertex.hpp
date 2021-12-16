@@ -52,12 +52,17 @@ struct VBO : __handling_entity<GLuint, VBO<_T>>
 	explicit VBO(size_t _n, GLenum _spec) : VBO(nullptr, _n, _spec) {}
 
 	void load(_T const * _data, size_t _n, size_t _offset = 0)
-	{ _tfunc<__impl_buffer_sub_data>::proc(GL_ARRAY_BUFFER, _offset * sizeof (_T), _n * sizeof (_T), _data); }
+	{
+		_tfunc<__impl_buffer_sub_data>::proc(GL_ARRAY_BUFFER, _offset * sizeof (_T),
+			_n * sizeof (_T), _data);
+	}
 
-	void setup_layout(GLuint _index, GLint _size, GLenum _spec, size_t _offset, bool _normalize = false)
+	VBO<_T>& setup_layout(GLuint _index, GLint _size, GLenum _spec, size_t _offset,
+		bool _normalize = false)
 	{
 		_tfunc<__impl_vertex_attrib_pointer>::proc(_index, _size, _spec, _normalize, sizeof (_T),
 			reinterpret_cast<void*>(_offset));
+		return *this;
 	}
 
 	void use(void) { _tfunc<__impl_bind_buffer>::proc(GL_ARRAY_BUFFER, this->handle()); }
@@ -68,30 +73,18 @@ struct VBO : __handling_entity<GLuint, VBO<_T>>
 
 template<size_t _N>
 void enable_layouts(GLuint (&_arr)[_N])
-{
-	for (auto it : _arr)
-		_tfunc<__impl_enable_vertex_attrib_array>::proc(it);
-}
+{ for (auto it : _arr) _tfunc<__impl_enable_vertex_attrib_array>::proc(it); }
 
 void enable_layouts(size_t _count)
-{
-	for (size_t i{}; i < _count; i++)
-		_tfunc<__impl_enable_vertex_attrib_array>::proc(i);
-}
+{ for (size_t i{}; i < _count; i++) _tfunc<__impl_enable_vertex_attrib_array>::proc(i); }
 
 
 template<size_t _N>
 void disable_layouts(GLuint (&_arr)[_N])
-{
-	for (auto it : _arr)
-		_tfunc<__impl_disable_vertex_attrib_array>::proc(it);
-}
+{ for (auto it : _arr) _tfunc<__impl_disable_vertex_attrib_array>::proc(it); }
 
 void disable_layouts(size_t _count)
-{
-	for (size_t i{}; i < _count; i++)
-		_tfunc<__impl_disable_vertex_attrib_array>::proc(i);
-}
+{ for (size_t i{}; i < _count; i++) _tfunc<__impl_disable_vertex_attrib_array>::proc(i); }
 
 } // namespace gl
 } // namespace vx
