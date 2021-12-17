@@ -71,9 +71,9 @@ struct shader : __handling_entity<GLuint, shader>
 		this->destroy();
 	}
 
-	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_shader>::proc(_val); }
-
 	GLuint get_handle(void) const { return handle(); }
+
+	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_shader>::proc(_val); }
 };
 
 
@@ -85,7 +85,7 @@ struct program : __handling_entity<GLuint, program>
 
 	template<typename _Logbug, typename... _Args, typename = std::enable_if_t<
 		types_pack<shader, std::remove_reference_t<std::remove_const_t<_Args>>...>::is_same::value>>
-	explicit program(_Logbug & _log, _Args const &&... _shaders)
+	explicit program(_Logbug & _log, _Args const &... _shaders)
 		: base_type(_tfunc<__impl_create_program>::proc())
 	{
 		if (!(_shaders.get_handle() && ...))
@@ -108,12 +108,12 @@ struct program : __handling_entity<GLuint, program>
 		this->destroy();
 	}
 
-	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_program>::proc(_val); }
-
 	void use(void) { _tfunc<__impl_use_program>::proc(handle()); }
 
 	GLint get_uniform_location(string_view const & _name)
 	{ return _tfunc<__impl_get_uniform_location>::proc(handle(), _name.data()); }
+
+	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_program>::proc(_val); }
 };
 
 } // namespace gl
