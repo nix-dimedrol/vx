@@ -105,7 +105,7 @@ GLvoid load_uniform(GLint _loc, vec<_T, _N> const & _v)
 }
 
 template<typename _T, length_t _N>
-GLvoid load_uniform(GLint _loc, size_t _cnt, vec<_T, _N> const * _arr)
+GLvoid load_uniform(GLint _loc, vec<_T, _N> const * _arr, size_t _cnt)
 {
 	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, _cnt,
 		reinterpret_cast<_T const *>(_arr));
@@ -119,10 +119,24 @@ GLvoid load_uniform(GLint _loc, mat<_T, _C, _R> const & _m, bool _trsp = false)
 }
 
 template<typename _T, length_t _C, length_t _R>
-GLvoid load_uniform(GLint _loc, size_t _cnt, mat<_T, _C, _R> const * _arr, bool _trsp = false)
+GLvoid load_uniform(GLint _loc, mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false)
 {
 	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
 		reinterpret_cast<_T const *>(_arr));
+}
+
+template<typename _T>
+std::enable_if_t<valid_types::is_contain<_T>::value, GLvoid>
+load_uniform(GLint _loc, _T _val)
+{
+	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc, 1, &_val);
+}
+
+template<typename _T>
+std::enable_if_t<valid_types::is_contain<_T>::value, GLvoid>
+load_uniform(GLint _loc, _T const * _arr, size_t _cnt)
+{
+	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc, _cnt, _arr);
 }
 
 } // namespace gl
