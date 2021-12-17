@@ -16,6 +16,14 @@ __VX_GL_DECL_PROC(bind_buffer, GLvoid(*)(GLenum, GLuint), "glBindBuffer");
 __VX_GL_DECL_PROC(buffer_data, GLvoid(*)(GLenum, GLsizeiptr, GLvoid const *, GLenum), "glBufferData");
 __VX_GL_DECL_PROC(buffer_sub_data, GLvoid(*)(GLenum, GLintptr, GLsizeiptr, GLvoid const *), "glBufferSubData");
 
+
+using __buffer_types_pack = types_pack<__impl_gen_buffers, __impl_delete_buffers, __impl_bind_buffer,
+	__impl_buffer_data, __impl_buffer_sub_data>;
+
+
+__VX_GL_DECL_PROC(gen_vertex_arrays, GLvoid(*)(GLsizei, GLuint*), "glGenVertexArrays");
+__VX_GL_DECL_PROC(bind_vertex_array, GLvoid(*)(GLuint), "glBindVertexArray");
+
 __VX_GL_DECL_PROC(vertex_attrib_pointer, GLvoid(*)(GLuint, GLint, GLenum, GLboolean, GLsizei, GLvoid const *), "glVertexAttribPointer");
 __VX_GL_DECL_PROC(vertex_attrib_i_pointer, GLvoid(*)(GLuint, GLint, GLenum, GLsizei, GLvoid const *), "glVertexAttribIPointer");
 
@@ -23,10 +31,8 @@ __VX_GL_DECL_PROC(enable_vertex_attrib_array, GLvoid(*)(GLuint), "glEnableVertex
 __VX_GL_DECL_PROC(disable_vertex_attrib_array, GLvoid(*)(GLuint), "glDisableVertexAttribArray");
 
 
-using __buffer_types_pack = types_pack<__impl_gen_buffers, __impl_delete_buffers, __impl_bind_buffer,
-	__impl_buffer_data, __impl_buffer_sub_data>;
-
-using __vertex_types_pack = types_pack<__impl_vertex_attrib_pointer, __impl_vertex_attrib_i_pointer,
+using __vertex_types_pack = types_pack<__impl_gen_vertex_arrays, __impl_bind_vertex_array,
+	__impl_vertex_attrib_pointer, __impl_vertex_attrib_i_pointer,
 	__impl_enable_vertex_attrib_array, __impl_disable_vertex_attrib_array>;
 
 
