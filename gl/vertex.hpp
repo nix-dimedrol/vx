@@ -63,7 +63,7 @@ struct VBO : __handling_entity<GLuint, VBO<_T>>
 			_n * sizeof (_T), _data);
 	}
 
-	VBO<_T>& setup_layout(GLuint _index, GLint _size, GLenum _spec, size_t _offset,
+	VBO<_T>& setup_attribute(GLuint _index, GLint _size, GLenum _spec, size_t _offset,
 		bool _normalize = false)
 	{
 		_tfunc<__impl_vertex_attrib_pointer>::proc(_index, _size, _spec, _normalize, sizeof (_T),
@@ -78,18 +78,18 @@ struct VBO : __handling_entity<GLuint, VBO<_T>>
 
 
 template<size_t _N>
-void enable_layouts(GLuint (&_arr)[_N])
+void enable_attributes(GLuint (&_arr)[_N])
 { for (auto it : _arr) _tfunc<__impl_enable_vertex_attrib_array>::proc(it); }
 
-void enable_layouts(size_t _count)
+void enable_attributes(size_t _count)
 { for (size_t i{}; i < _count; i++) _tfunc<__impl_enable_vertex_attrib_array>::proc(i); }
 
 
 template<size_t _N>
-void disable_layouts(GLuint (&_arr)[_N])
+void disable_attributes(GLuint (&_arr)[_N])
 { for (auto it : _arr) _tfunc<__impl_disable_vertex_attrib_array>::proc(it); }
 
-void disable_layouts(size_t _count)
+void disable_attributes(size_t _count)
 { for (size_t i{}; i < _count; i++) _tfunc<__impl_disable_vertex_attrib_array>::proc(i); }
 
 } // namespace gl
