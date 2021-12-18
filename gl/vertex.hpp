@@ -3,6 +3,7 @@
 
 
 #include "common.hpp"
+#include "../math_types.hpp"
 
 
 namespace vx
@@ -44,6 +45,58 @@ void load_vertex_procs(_Predicate _pred)
 }
 
 
+namespace detail
+{
+
+template<typename>
+struct __tmacro_type
+{
+	static const GLenum value;
+};
+
+template<> const GLenum __tmacro_type<float>::value         = GL_FLOAT;
+template<> const GLenum __tmacro_type<double>::value        = GL_DOUBLE;
+template<> const GLenum __tmacro_type<std::int32_t>::value  = GL_INT;
+template<> const GLenum __tmacro_type<std::uint32_t>::value = GL_UNSIGNED_INT;
+template<> const GLenum __tmacro_type<std::int16_t>::value  = GL_SHORT;
+template<> const GLenum __tmacro_type<std::uint16_t>::value = GL_UNSIGNED_SHORT;
+template<> const GLenum __tmacro_type<std::int8_t>::value   = GL_BYTE;
+template<> const GLenum __tmacro_type<std::uint8_t>::value  = GL_UNSIGNED_BYTE;
+
+
+template<size_t _VDataSize, typename _T, size_t _N>
+struct __config_attrib_impl
+{
+	static void setup(size_t _idx, size_t _offset)
+	{
+		_tfunc<__impl_vertex_attrib_pointer>::proc(_idx, _N, __tmacro_type<_T>::value, false,
+			_VDataSize, reinterpret_cast<void*>(_offset));
+	}
+};
+
+
+template<size_t _VDataSize, typename _T>
+struct __config_attrib : __config_attrib_impl<_VDataSize, _T, 1> {};
+
+template<size_t _VDataSize, typename _T, length_t _N>
+struct __config_attrib<_VDataSize, vec<_T, _N>> : __config_attrib_impl<_VDataSize, _T, _N> {};
+
+
+template<size_t, typename...> struct __config_attrib_recurse
+{ static void setup(size_t, size_t) {} };
+template<size_t _VDataSize, typename _T, typename... _Args>
+struct __config_attrib_recurse<_VDataSize, _T, _Args...>
+{
+	static void setup(size_t _idx = 0, size_t _offset = 0)
+	{
+		__config_attrib<_VDataSize, _T>::setup(_idx, _offset);
+		__config_attrib_recurse<_VDataSize, _Args...>::setup(_idx + 1, _offset + sizeof (_T));
+	}
+};
+
+} // namespace detail
+
+
 
 template<typename _T>
 struct VBO : __handling_entity<GLuint, VBO<_T>>
@@ -63,12 +116,18 @@ struct VBO : __handling_entity<GLuint, VBO<_T>>
 			_n * sizeof (_T), _data);
 	}
 
-	VBO<_T>& setup_attribute(GLuint _index, GLint _size, GLenum _spec, size_t _offset,
+	VBO<_T>& setup_attrib(GLuint _index, GLint _size, GLenum _spec, size_t _offset,
 		bool _normalize = false)
 	{
 		_tfunc<__impl_vertex_attrib_pointer>::proc(_index, _size, _spec, _normalize, sizeof (_T),
 			reinterpret_cast<void*>(_offset));
 		return *this;
+	}
+
+	template<typename ..._Args>
+	void setup_attribs(void)
+	{
+		detail::__config_attrib_recurse<sizeof(_T), _Args...>::setup();
 	}
 
 	void use(void) { _tfunc<__impl_bind_buffer>::proc(GL_ARRAY_BUFFER, this->handle()); }
@@ -78,18 +137,18 @@ struct VBO : __handling_entity<GLuint, VBO<_T>>
 
 
 template<size_t _N>
-void enable_attributes(GLuint (&_arr)[_N])
+void enable_attribs(GLuint (&_arr)[_N])
 { for (auto it : _arr) _tfunc<__impl_enable_vertex_attrib_array>::proc(it); }
 
-void enable_attributes(size_t _count)
+void enable_attribs(size_t _count)
 { for (size_t i{}; i < _count; i++) _tfunc<__impl_enable_vertex_attrib_array>::proc(i); }
 
 
 template<size_t _N>
-void disable_attributes(GLuint (&_arr)[_N])
+void disable_attribs(GLuint (&_arr)[_N])
 { for (auto it : _arr) _tfunc<__impl_disable_vertex_attrib_array>::proc(it); }
 
-void disable_attributes(size_t _count)
+void disable_attribs(size_t _count)
 { for (size_t i{}; i < _count; i++) _tfunc<__impl_disable_vertex_attrib_array>::proc(i); }
 
 } // namespace gl
