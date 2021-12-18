@@ -20,7 +20,7 @@ namespace vx
 namespace gl
 {
 
-using valid_types = types_pack<float, int>;
+using valid_types = types_pack<float, int, unsigned>;
 
 
 template<typename _T>
@@ -37,8 +37,7 @@ using mat = glm::mat<_C, _R, _T>;
 using length_t = size_t;
 #endif
 
-template<typename>
-struct is_vec_type_valid : std::false_type {};
+template<typename> struct is_vec_type_valid : std::false_type {};
 template<typename _T, length_t _N>
 struct is_vec_type_valid<vec<_T, _N>> : conjunction<is_type_valid<_T>,
 	bool_constant<(_N >= 2 && _N <= 4)>> {};
@@ -46,8 +45,7 @@ struct is_vec_type_valid<vec<_T, _N>> : conjunction<is_type_valid<_T>,
 template<typename _T, length_t _N>
 struct is_type_valid<vec<_T, _N>> : is_vec_type_valid<vec<_T, _N>> {};
 
-template<typename>
-struct is_mat_type_valid : std::false_type {};
+template<typename> struct is_mat_type_valid : std::false_type {};
 template<typename _T, length_t _C, length_t _R>
 struct is_mat_type_valid<mat<_T, _C, _R>> : conjunction<is_type_valid<_T>,
 	bool_constant<(_C >= 2 && _C <= 4 && _R >= 2 && _R <= 4)>> {};
@@ -71,6 +69,7 @@ constexpr auto __get_proc_type_suffix(void) noexcept;
 
 template<> constexpr auto __get_proc_type_suffix<float>(void) noexcept { return _ct::make_string('f'); }
 template<> constexpr auto __get_proc_type_suffix<int>(void) noexcept { return _ct::make_string('i'); }
+template<> constexpr auto __get_proc_type_suffix<unsigned>(void) noexcept { return _ct::make_string("ui"); }
 
 
 template<typename>
