@@ -46,74 +46,91 @@ void load_shader_procs(_Predicate _pred)
 }
 
 
-struct program;
-
-struct shader : __handling_entity<GLuint, shader>
+struct shader : noncopyable
 {
-	using base_type = __handling_entity<GLuint, shader>;
-
-	explicit shader(void) = default;
-
-	template<typename _Logbuf>
-	explicit shader(GLenum _spec, string_view const & _src, _Logbuf & _log)
-		: base_type(_tfunc<__impl_create_shader>::proc(_spec))
+	explicit shader(GLenum _spec, string_view const & _src)
+		: handle(_tfunc<__impl_create_shader>::proc(_spec))
 	{
 		GLint src_size = _src.size();
 		GLchar const * src_data = _src.data();
-		_tfunc<__impl_shader_source>::proc(handle(), 1, &src_data, &src_size);
-		_tfunc<__impl_compile_shader>::proc(handle());
+		_tfunc<__impl_shader_source>::proc(handle, 1, &src_data, &src_size);
+		_tfunc<__impl_compile_shader>::proc(handle);
 		GLint is_compiled{};
-		_tfunc<__impl_get_shader_iv>::proc(handle(), GL_COMPILE_STATUS, &is_compiled);
-		if (is_compiled == GL_TRUE) return;
-		GLint log_length{};
-		_tfunc<__impl_get_shader_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
-		_tfunc<__impl_get_shader_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
-		this->destroy();
+		_tfunc<__impl_get_shader_iv>::proc(handle, GL_COMPILE_STATUS, &is_compiled);
+		if (!is_compiled) error = true;
 	}
 
-	GLuint get_handle(void) const { return handle(); }
+	template<typename _Logbuf>
+	explicit shader(GLenum _spec, string_view const & _src, _Logbuf & _log)
+		: shader(_spec, _src) { get_log(_log); }
 
-	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_shader>::proc(_val); }
+	template<typename _Logbuf>
+	void get_log(_Logbuf & _log)
+	{
+		GLint log_length{};
+		_tfunc<__impl_get_shader_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
+		_tfunc<__impl_get_shader_infolog>::proc(handle, log_length, &log_length, _log.get(log_length));
+	}
+
+	~shader(void) { if (handle) _tfunc<__impl_delete_shader>::proc(handle); }
+
+	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle); }
+	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
+
+	constexpr operator GLuint(void) const noexcept { return handle; }
+
+private:
+
+	GLuint handle;
+	bool error = false;
 };
 
 
-struct program : __handling_entity<GLuint, program>
+struct program : noncopyable
 {
-	using base_type = __handling_entity<GLuint, program>;
+	explicit program(void)
+		: handle(_tfunc<__impl_create_program>::proc()) {}
 
-	explicit program(void) = default;
-
-	template<typename _Logbug, typename... _Args, typename = std::enable_if_t<
-		types_pack<shader, std::remove_reference_t<std::remove_const_t<_Args>>...>::is_same::value>>
-	explicit program(_Logbug & _log, _Args const &... _shaders)
-		: base_type(_tfunc<__impl_create_program>::proc())
+	program & link(std::initializer_list<GLuint> _arr)
 	{
-		if (!(_shaders.get_handle() && ...))
-		{
-			this->destroy();
-			return;
-		}
-		(_tfunc<__impl_attach_shader>::proc(handle(), _shaders.get_handle()), ...);
-		_tfunc<__impl_link_program>::proc(handle());
+		for (auto it : _arr) _tfunc<__impl_attach_shader>::proc(handle, it);
+		_tfunc<__impl_link_program>::proc(handle);
 		GLint is_linked{};
-		_tfunc<__impl_get_program_iv>::proc(handle(), GL_LINK_STATUS, &is_linked);
-		if (is_linked == GL_TRUE)
-		{
-			(_tfunc<__impl_detach_shader>::proc(handle(), _shaders.get_handle()), ...);
-			return;
-		}
-		GLint log_length{};
-		_tfunc<__impl_get_program_iv>::proc(handle(), GL_INFO_LOG_LENGTH, &log_length);
-		_tfunc<__impl_get_program_infolog>::proc(handle(), log_length, &log_length, _log.get(log_length));
-		this->destroy();
+		_tfunc<__impl_get_program_iv>::proc(handle, GL_LINK_STATUS, &is_linked);
+		if (!is_linked) error = true;
+		for (auto it : _arr) _tfunc<__impl_detach_shader>::proc(handle, it);
+		return *this;
 	}
 
-	void use(void) { _tfunc<__impl_use_program>::proc(handle()); }
+	template<typename _Logbuf>
+	program & get_log(_Logbuf & _log)
+	{
+		GLint log_length{};
+		_tfunc<__impl_get_program_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
+		_tfunc<__impl_get_program_infolog>::proc(handle, log_length, &log_length, _log.get(log_length));
+		return *this;
+	}
+
+	program & use(void)
+	{
+		_tfunc<__impl_use_program>::proc(handle);
+		return *this;
+	}
 
 	GLint get_uniform_location(string_view const & _name)
-	{ return _tfunc<__impl_get_uniform_location>::proc(handle(), _name.data()); }
+	{ return _tfunc<__impl_get_uniform_location>::proc(handle, _name.data()); }
 
-	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_program>::proc(_val); }
+	~program(void) { if (handle) _tfunc<__impl_delete_program>::proc(handle); }
+
+	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle); }
+	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
+
+	constexpr operator GLuint(void) const noexcept { return handle; }
+
+private:
+
+	GLuint handle;
+	bool error = false;
 };
 
 } // namespace gl
