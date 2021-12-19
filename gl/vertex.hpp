@@ -99,40 +99,55 @@ struct __config_attrib_recurse<_VDataSize, _T, _Args...>
 
 
 template<typename _T>
-struct VBO : __handling_entity<GLuint, VBO<_T>>
+struct VBO : noncopyable
 {
-	explicit VBO(_T const * _data, size_t _n, GLenum _spec)
+	using value_type = _T;
+	using self_type  = VBO<value_type>;
+
+	explicit VBO(value_type const * _data, size_t _n, GLenum _spec)
 	{
-		_tfunc<__impl_gen_buffers>::proc(1, &this->handle());
+		_tfunc<__impl_gen_buffers>::proc(1, &handle);
 		this->use();
-		_tfunc<__impl_buffer_data>::proc(GL_ARRAY_BUFFER, sizeof (_T) * _n, _data, _spec);
+		_tfunc<__impl_buffer_data>::proc(GL_ARRAY_BUFFER,
+			sizeof (value_type) * _n, _data, _spec);
 	}
 
 	explicit VBO(size_t _n, GLenum _spec) : VBO(nullptr, _n, _spec) {}
 
-	void load(_T const * _data, size_t _n, size_t _offset = 0)
+
+	self_type & load(_T const * _data, size_t _n, size_t _offset = 0)
 	{
-		_tfunc<__impl_buffer_sub_data>::proc(GL_ARRAY_BUFFER, _offset * sizeof (_T),
-			_n * sizeof (_T), _data);
+		_tfunc<__impl_buffer_sub_data>::proc(GL_ARRAY_BUFFER,
+			_offset * sizeof (value_type), _n * sizeof (_T), _data);
+		return *this;
 	}
 
-	VBO<_T>& setup_attrib(GLuint _index, GLint _size, GLenum _spec, size_t _offset,
+	self_type & setup_attrib(GLuint _index, GLint _size, GLenum _spec, size_t _offset,
 		bool _normalize = false)
 	{
-		_tfunc<__impl_vertex_attrib_pointer>::proc(_index, _size, _spec, _normalize, sizeof (_T),
-			reinterpret_cast<void*>(_offset));
+		_tfunc<__impl_vertex_attrib_pointer>::proc(_index, _size, _spec, _normalize,
+			sizeof (value_type), reinterpret_cast<void*>(_offset));
 		return *this;
 	}
 
 	template<typename ..._Args>
-	void setup_attribs(void)
+	self_type & setup_attribs(void)
 	{
 		detail::__config_attrib_recurse<sizeof(_T), _Args...>::setup();
+		return *this;
 	}
 
-	void use(void) { _tfunc<__impl_bind_buffer>::proc(GL_ARRAY_BUFFER, this->handle()); }
+	self_type & use(void)
+	{
+		_tfunc<__impl_bind_buffer>::proc(GL_ARRAY_BUFFER, handle);
+		return *this;
+	}
 
-	static void destroy_resource(GLuint _val) { _tfunc<__impl_delete_buffers>::proc(1, &_val); }
+	~VBO(void) { _tfunc<__impl_delete_buffers>::proc(1, &handle); }
+
+private:
+
+	GLuint handle;
 };
 
 
