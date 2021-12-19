@@ -130,49 +130,6 @@ struct types_pack
 };
 
 
-template<typename _T, typename _Derived>
-struct __handling_entity : noncopyable
-{
-	using handle_type  = _T;
-	using derived_type = _Derived;
-	using self_type    = __handling_entity<handle_type, derived_type>;
-
-	explicit __handling_entity(self_type && _other) : _M_handle(std::move(_other._M_handle))
-	{ _other._M_handle = handle_type{}; }
-
-	self_type & operator= (self_type && _other)
-	{
-		if (this == &_other) return *this;
-		if (*this) derived_type::destroy_resource(_M_handle);
-		_M_handle = std::move(_other._M_handle);
-		_other._M_handle = handle_type{};
-		return *this;
-	}
-
-	~__handling_entity(void) { if (*this) derived_type::destroy_resource(_M_handle); }
-
-	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(_M_handle); }
-	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
-
-protected:
-
-	constexpr handle_type & handle(void) noexcept { return _M_handle; }
-	constexpr handle_type const & handle(void) const noexcept { return  _M_handle; }
-
-	void destroy(void)
-	{
-		derived_type::destroy_resource(_M_handle);
-		_M_handle = 0;
-	}
-
-	explicit __handling_entity(handle_type const & _value = handle_type{}) : _M_handle(_value) {}
-
-private:
-
-	handle_type _M_handle;
-};
-
-
 namespace _ct
 {
 
