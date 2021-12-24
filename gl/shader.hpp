@@ -32,10 +32,13 @@ __VX_GL_DECL_PROC(get_program_iv, GLvoid(*)(GLuint, GLenum, GLint*), "glGetProgr
 __VX_GL_DECL_PROC(get_program_infolog, GLvoid(*)(GLuint, GLsizei, GLsizei*, GLchar*), "glGetProgramInfoLog");
 __VX_GL_DECL_PROC(get_uniform_location, GLint(*)(GLuint, GLchar const *), "glGetUniformLocation");
 
+__VX_GL_DECL_PROC(program_parameter_i, GLvoid(*)(GLuint, GLenum, GLint), "glProgramParameteri");
+
 
 using __program_types_pack = types_pack<__impl_create_program, __impl_delete_program,
 	__impl_attach_shader, __impl_detach_shader, __impl_link_program, __impl_use_program,
-	__impl_get_program_iv, __impl_get_program_infolog, __impl_get_uniform_location>;
+	__impl_get_program_iv, __impl_get_program_infolog, __impl_get_uniform_location,
+	__impl_program_parameter_i>;
 
 
 template<typename _Predicate>
@@ -90,6 +93,14 @@ struct program : noncopyable
 {
 	explicit program(void)
 		: handle(_tfunc<__impl_create_program>::proc()) {}
+
+#ifdef VX_GL_PROGRAM_SEPARABLE_EXT
+	program & link(std::initializer_list<GLuint> _arr, bool _separable)
+	{
+		_tfunc<__impl_program_parameter_i>::proc(handle, GL_PROGRAM_SEPARABLE, _separable);
+		return this->link(_arr);
+	}
+#endif
 
 	program & link(std::initializer_list<GLuint> _arr)
 	{

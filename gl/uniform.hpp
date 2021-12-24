@@ -6,6 +6,13 @@
 #include "../math_types.hpp"
 
 
+#ifndef VX_GL_PROGRAM_SEPARABLE_EXT
+#define __VX_GL_DEPENDED_UNIFORM_PROC_NAMING vx::_ct::make_string("glUniform")
+#else
+#define __VX_GL_DEPENDED_UNIFORM_PROC_NAMING vx::_ct::make_string("glProgramUniform")
+#endif
+
+
 namespace vx
 {
 namespace gl
@@ -61,8 +68,8 @@ struct __impl_uniform<vec<_T, _N>>
 {
 	using proc_type = std::enable_if_t<valid_types::is_contain<_T>::value,
 		GLvoid(*)(GLint, GLsizei, _T const *)>;
-	static constexpr auto proc_name = _ct::make_string("glUniform") + char(_N + '0')
-		+ __get_proc_type_suffix<_T>() + 'v';
+	static constexpr auto proc_name = __VX_GL_DEPENDED_UNIFORM_PROC_NAMING
+		+ char(_N + '0') + __get_proc_type_suffix<_T>() + 'v';
 };
 
 template<typename _T, length_t _C, length_t _R>
@@ -70,8 +77,8 @@ struct __impl_uniform<mat<_T, _C, _R>>
 {
 	using proc_type = std::enable_if_t<valid_types::is_contain<_T>::value,
 		GLvoid(*)(GLint, GLsizei, GLboolean, _T const *)>;
-	static constexpr auto proc_name = _ct::make_string("glUniformMatrix") +
-		_ct::__if<bool_constant<(_C == _R)>>(char(_C + '0'), _ct::make_string(_C + '0') + 'x'
+	static constexpr auto proc_name = __VX_GL_DEPENDED_UNIFORM_PROC_NAMING + _ct::make_string("Matrix")
+		+ _ct::__if<bool_constant<(_C == _R)>>(char(_C + '0'), _ct::make_string(_C + '0') + 'x'
 			+ char(_R + '0')) + __get_proc_type_suffix<_T>() + 'v';
 };
 
