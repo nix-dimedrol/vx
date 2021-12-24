@@ -74,7 +74,7 @@ struct shader : noncopyable
 
 	~shader(void) { if (handle) _tfunc<__impl_delete_shader>::proc(handle); }
 
-	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle); }
+	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle) && !error; }
 	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
 
 	constexpr operator GLuint(void) const noexcept { return handle; }
@@ -122,7 +122,7 @@ struct program : noncopyable
 
 	~program(void) { if (handle) _tfunc<__impl_delete_program>::proc(handle); }
 
-	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle); }
+	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle) && !error; }
 	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
 
 	constexpr operator GLuint(void) const noexcept { return handle; }
