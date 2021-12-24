@@ -236,6 +236,26 @@ constexpr auto make_string(s_string<_Arg0> const & _first, s_string<_Args> const
 	return make_string(_first, make_string(_other...));
 }
 
+
+template<size_t _N, size_t _M>
+constexpr auto operator+ (_ct::s_string<_N> const & _v1, _ct::s_string<_M> const & _v2) noexcept
+{
+	return _ct::make_string(_v1, _v2);
+}
+
+template<size_t _N>
+constexpr auto operator+ (_ct::s_string<_N> const & _v1, char _c) noexcept
+{
+	return _ct::make_string(_v1, _ct::make_string(_c));
+}
+
+template<size_t _N>
+constexpr auto operator+ (char _c, _ct::s_string<_N> const & _v1) noexcept
+{
+	return _ct::make_string(_ct::make_string(_c), _v1);
+}
+
+
 } // namespace _ct
 } // namespace vx
 

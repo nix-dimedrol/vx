@@ -61,8 +61,8 @@ struct __impl_uniform<vec<_T, _N>>
 {
 	using proc_type = std::enable_if_t<valid_types::is_contain<_T>::value,
 		GLvoid(*)(GLint, GLsizei, _T const *)>;
-	static constexpr auto proc_name = _ct::make_string(_ct::make_string("glUniform"),
-		_ct::make_string(char(_N + '0')), __get_proc_type_suffix<_T>(), _ct::make_string('v'));
+	static constexpr auto proc_name = _ct::make_string("glUniform") + char(_N + '0')
+		+ __get_proc_type_suffix<_T>() + 'v';
 };
 
 template<typename _T, length_t _C, length_t _R>
@@ -70,10 +70,9 @@ struct __impl_uniform<mat<_T, _C, _R>>
 {
 	using proc_type = std::enable_if_t<valid_types::is_contain<_T>::value,
 		GLvoid(*)(GLint, GLsizei, GLboolean, _T const *)>;
-	static constexpr auto proc_name = _ct::make_string(_ct::make_string("glUniformMatrix"),
-		_ct::__if<bool_constant<(_C == _R)>>(_ct::make_string(char(_C + '0')),
-			_ct::make_string(_ct::make_string(char(_C + '0')), _ct::make_string('x'), _ct::make_string(char(_R + '0')))),
-		__get_proc_type_suffix<_T>(), _ct::make_string('v'));
+	static constexpr auto proc_name = _ct::make_string("glUniformMatrix") +
+		_ct::__if<bool_constant<(_C == _R)>>(char(_C + '0'), _ct::make_string(_C + '0') + 'x'
+			+ char(_R + '0')) + __get_proc_type_suffix<_T>() + 'v';
 };
 
 
