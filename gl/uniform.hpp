@@ -103,7 +103,7 @@ void load_uniform_procs(_Predicate _pred)
 
 
 template<typename _T, length_t _N>
-enable_if_valid_t<vec<_T, _N>> load_uniform
+enable_if_valid_t<vec<_T, _N>> uniform
 	(GLint _loc, vec<_T, _N> const & _v)
 {
 	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, 1,
@@ -111,7 +111,7 @@ enable_if_valid_t<vec<_T, _N>> load_uniform
 }
 
 template<typename _T, length_t _N>
-enable_if_valid_t<vec<_T, _N>> load_uniform
+enable_if_valid_t<vec<_T, _N>> uniform
 	(GLint _loc, vec<_T, _N> const * _arr, size_t _cnt)
 {
 	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, _cnt,
@@ -119,7 +119,7 @@ enable_if_valid_t<vec<_T, _N>> load_uniform
 }
 
 template<typename _T, length_t _C, length_t _R>
-enable_if_valid_t<mat<_T, _C, _R>> load_uniform
+enable_if_valid_t<mat<_T, _C, _R>> uniform
 	(GLint _loc, mat<_T, _C, _R> const & _m, bool _trsp = false)
 {
 	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, 1, _trsp,
@@ -127,7 +127,7 @@ enable_if_valid_t<mat<_T, _C, _R>> load_uniform
 }
 
 template<typename _T, length_t _C, length_t _R>
-enable_if_valid_t<mat<_T, _C, _R>> load_uniform
+enable_if_valid_t<mat<_T, _C, _R>> uniform
 	(GLint _loc, mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false)
 {
 	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
@@ -135,13 +135,13 @@ enable_if_valid_t<mat<_T, _C, _R>> load_uniform
 }
 
 template<typename _T>
-enable_if_valid_t<_T> load_uniform(GLint _loc, _T _val)
+enable_if_valid_t<_T> uniform(GLint _loc, _T _val)
 {
 	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc, 1, &_val);
 }
 
 template<typename _T>
-enable_if_valid_t<_T> load_uniform(GLint _loc, _T const * _arr, size_t _cnt)
+enable_if_valid_t<_T> uniform(GLint _loc, _T const * _arr, size_t _cnt)
 {
 	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc, _cnt, _arr);
 }
