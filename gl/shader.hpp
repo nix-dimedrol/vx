@@ -95,22 +95,36 @@ struct program : noncopyable
 		: handle(_tfunc<__impl_create_program>::proc()) {}
 
 #ifdef VX_GL_PROGRAM_SEPARABLE_EXT
-	program & link(std::initializer_list<GLuint> _arr, bool _separable)
+	template<typename _Iter>
+	program & link(_Iter _begin, _Iter _end, bool _separable)
 	{
 		_tfunc<__impl_program_parameter_i>::proc(handle, GL_PROGRAM_SEPARABLE, _separable);
-		return this->link(_arr);
+		return this->link(_begin, _end);
+	}
+
+	program & link(std::initializer_list<GLuint> _arr, bool _separable)
+	{
+		return this->link(_arr.begin(), _arr.end(), _separable);
 	}
 #endif
 
-	program & link(std::initializer_list<GLuint> _arr)
+	template<typename _Iter>
+	program & link(_Iter _begin, _Iter _end)
 	{
-		for (auto it : _arr) _tfunc<__impl_attach_shader>::proc(handle, it);
+		for (auto it = _begin; it != _end; it++)
+			_tfunc<__impl_attach_shader>::proc(handle, *it);
 		_tfunc<__impl_link_program>::proc(handle);
 		GLint is_linked{};
 		_tfunc<__impl_get_program_iv>::proc(handle, GL_LINK_STATUS, &is_linked);
 		if (!is_linked) error = true;
-		for (auto it : _arr) _tfunc<__impl_detach_shader>::proc(handle, it);
+		for (auto it = _begin; it != _end; it++)
+			_tfunc<__impl_detach_shader>::proc(handle, *it);
 		return *this;
+	}
+
+	program & link(std::initializer_list<GLuint> _arr)
+	{
+		return this->link(_arr.begin(), _arr.end());
 	}
 
 	template<typename _Logbuf>
