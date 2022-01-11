@@ -134,16 +134,16 @@ namespace _ct
 {
 
 
-template<typename _Predicate, size_t... _Args>
+template<size_t _First, typename _Predicate, size_t... _Args>
 void __for(_Predicate _pred, std::index_sequence<_Args...>)
 {
-	int ret[]{0, ((void)_pred(std::integral_constant<size_t, _Args>{}), 0)...};
+	int ret[]{0, ((void)_pred(std::integral_constant<size_t, _First + _Args>{}), 0)...};
 }
 
-template<size_t _N, typename _Predicate>
+template<size_t _First, size_t _N, typename _Predicate>
 void __for(_Predicate _pred)
 {
-	__for(_pred, std::make_index_sequence<_N>{});
+	__for<_First>(_pred, std::make_index_sequence<_N>{});
 }
 
 
