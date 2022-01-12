@@ -85,11 +85,7 @@ struct shader : noncopyable
 	}
 
 	template<typename _Logbuf>
-	explicit shader(GLenum _spec, string_view const & _src, _Logbuf & _log)
-		: shader(_spec, _src) { get_log(_log); }
-
-	template<typename _Logbuf>
-	void get_log(_Logbuf & _log)
+	shader & get_log(_Logbuf & _log)
 	{
 		GLint log_length{};
 		_tfunc<__impl_get_shader_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
