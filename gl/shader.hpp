@@ -3,6 +3,7 @@
 
 
 #include "common.hpp"
+#include <vector>
 
 
 namespace vx
@@ -51,16 +52,36 @@ void load_shader_procs(_Predicate _pred)
 
 struct shader : noncopyable
 {
+	template<typename _InputIter>
+	explicit shader(GLenum _spec, _InputIter _begin, _InputIter _end)
+		: shader(_spec)
+	{
+		size_t _src_cnt = std::distance(_begin, _end);
+		std::vector<GLint> _length_arr;
+		_length_arr.reserve(_src_cnt);
+		std::vector<char const *> _data_arr;
+		_data_arr.reserve(_src_cnt);
+		for (auto it = _begin; it != _end; it++)
+		{
+			string_view const & _view = *it;
+			_length_arr.push_back(_view.size());
+			_data_arr.push_back(_view.data());
+		}
+		_tfunc<__impl_shader_source>::proc(handle,
+			_src_cnt, _data_arr.data(), _length_arr.data());
+		this->__compile();
+	}
+
+	explicit shader(GLenum _spec, std::initializer_list<string_view> _arr)
+		: shader(_spec, _arr.begin(), _arr.end()) {}
+
 	explicit shader(GLenum _spec, string_view const & _src)
-		: handle(_tfunc<__impl_create_shader>::proc(_spec))
+		: shader(_spec)
 	{
 		GLint src_size = _src.size();
 		GLchar const * src_data = _src.data();
 		_tfunc<__impl_shader_source>::proc(handle, 1, &src_data, &src_size);
-		_tfunc<__impl_compile_shader>::proc(handle);
-		GLint is_compiled{};
-		_tfunc<__impl_get_shader_iv>::proc(handle, GL_COMPILE_STATUS, &is_compiled);
-		if (!is_compiled) error = true;
+		this->__compile();
 	}
 
 	template<typename _Logbuf>
@@ -72,15 +93,31 @@ struct shader : noncopyable
 	{
 		GLint log_length{};
 		_tfunc<__impl_get_shader_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
-		_tfunc<__impl_get_shader_infolog>::proc(handle, log_length, &log_length, _log.get(log_length));
+		_tfunc<__impl_get_shader_infolog>::proc(handle,
+			log_length, &log_length, _log.get(log_length));
 	}
 
 	~shader(void) { if (handle) _tfunc<__impl_delete_shader>::proc(handle); }
 
-	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle) && !error; }
-	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
+	constexpr explicit operator bool (void) const noexcept
+	{ return static_cast<bool>(handle) && !error; }
+	constexpr bool operator! (void) const noexcept
+	{ return !static_cast<bool>(*this); }
 
 	constexpr operator GLuint(void) const noexcept { return handle; }
+
+protected:
+
+	explicit shader(GLenum _spec)
+		: handle(_tfunc<__impl_create_shader>::proc(_spec)) {}
+
+	void __compile(void)
+	{
+		_tfunc<__impl_compile_shader>::proc(handle);
+		GLint is_compiled{};
+		_tfunc<__impl_get_shader_iv>::proc(handle, GL_COMPILE_STATUS, &is_compiled);
+		if (!is_compiled) error = true;
+	}
 
 private:
 
@@ -132,7 +169,8 @@ struct program : noncopyable
 	{
 		GLint log_length{};
 		_tfunc<__impl_get_program_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
-		_tfunc<__impl_get_program_infolog>::proc(handle, log_length, &log_length, _log.get(log_length));
+		_tfunc<__impl_get_program_infolog>::proc(handle,
+			log_length, &log_length, _log.get(log_length));
 		return *this;
 	}
 
@@ -147,8 +185,10 @@ struct program : noncopyable
 
 	~program(void) { if (handle) _tfunc<__impl_delete_program>::proc(handle); }
 
-	constexpr explicit operator bool (void) const noexcept { return static_cast<bool>(handle) && !error; }
-	constexpr bool operator! (void) const noexcept { return !static_cast<bool>(*this); }
+	constexpr explicit operator bool (void) const noexcept
+	{ return static_cast<bool>(handle) && !error; }
+	constexpr bool operator! (void) const noexcept
+	{ return !static_cast<bool>(*this); }
 
 	constexpr operator GLuint(void) const noexcept { return handle; }
 
