@@ -42,7 +42,7 @@ enum basic_errors
 
 std::error_code make_error_code(basic_errors _e)
 {
-	return {static_cast<int>(_e), detail::__graphics_category()};
+	return {static_cast<int>(_e), vx::detail::__graphics_category()};
 }
 
 } // namespace error
