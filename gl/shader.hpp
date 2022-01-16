@@ -51,6 +51,45 @@ void load_shader_procs(_Predicate _pred)
 }
 
 
+namespace detail
+{
+
+template<typename _InputIter>
+void __set_shader_source(GLuint _handle, _InputIter _begin, _InputIter _end)
+{
+	size_t _src_cnt = std::distance(_begin, _end);
+	std::vector<GLint> _length_arr;
+	_length_arr.reserve(_src_cnt);
+	std::vector<char const *> _data_arr;
+	_data_arr.reserve(_src_cnt);
+	for (auto it = _begin; it != _end; it++)
+	{
+		string_view const & _view = *it;
+		_length_arr.push_back(_view.size());
+		_data_arr.push_back(_view.data());
+	}
+	_tfunc<__impl_shader_source>::proc(_handle,
+		_src_cnt, _data_arr.data(), _length_arr.data());
+}
+
+void __set_shader_source(GLuint _handle, string_view const & _src)
+{
+	GLint src_size = _src.size();
+	GLchar const * src_data = _src.data();
+	_tfunc<__impl_shader_source>::proc(_handle, 1, &src_data, &src_size);
+}
+
+void __compile_shader(GLuint _handle, std::error_code & _ec)
+{
+	_tfunc<__impl_compile_shader>::proc(_handle);
+	GLint is_compiled{};
+	_tfunc<__impl_get_shader_iv>::proc(_handle, GL_COMPILE_STATUS, &is_compiled);
+	if (!is_compiled) _ec = error::shader_compilation_failure;
+}
+
+} // namespace detail
+
+
 struct shader : noncopyable
 {
 	template<typename _InputIter>
@@ -58,7 +97,8 @@ struct shader : noncopyable
 		std::error_code & _ec)
 		: shader(_spec)
 	{
-		this->__compile_source(_begin, _end, _ec);
+		detail::__set_shader_source(handle, _begin, _end);
+		detail::__compile_shader(handle, _ec);
 	}
 
 	template<typename _InputIter>
@@ -66,7 +106,8 @@ struct shader : noncopyable
 		: shader(_spec)
 	{
 		std::error_code _ec;
-		this->__compile_source(_begin, _end, _ec);
+		detail::__set_shader_source(handle, _begin, _end);
+		detail::__compile_shader(handle, _ec);
 		if (_ec) throw std::system_error{_ec};
 	}
 
@@ -82,14 +123,16 @@ struct shader : noncopyable
 		std::error_code & _ec)
 		: shader(_spec)
 	{
-		this->__compile_source(_src, _ec);
+		detail::__set_shader_source(handle, _src);
+		detail::__compile_shader(handle, _ec);
 	}
 
 	explicit shader(GLenum _spec, string_view const & _src)
 		: shader(_spec)
 	{
 		std::error_code _ec;
-		this->__compile_source(_src, _ec);
+		detail::__set_shader_source(handle, _src);
+		detail::__compile_shader(handle, _ec);
 		if (_ec) throw std::system_error{_ec};
 	}
 
@@ -113,43 +156,6 @@ protected:
 
 	explicit shader(GLenum _spec)
 		: handle(_tfunc<__impl_create_shader>::proc(_spec)) {}
-
-
-	template<typename _InputIter>
-	void __compile_source(_InputIter _begin, _InputIter _end,
-		std::error_code & _ec)
-	{
-		size_t _src_cnt = std::distance(_begin, _end);
-		std::vector<GLint> _length_arr;
-		_length_arr.reserve(_src_cnt);
-		std::vector<char const *> _data_arr;
-		_data_arr.reserve(_src_cnt);
-		for (auto it = _begin; it != _end; it++)
-		{
-			string_view const & _view = *it;
-			_length_arr.push_back(_view.size());
-			_data_arr.push_back(_view.data());
-		}
-		_tfunc<__impl_shader_source>::proc(handle,
-			_src_cnt, _data_arr.data(), _length_arr.data());
-		this->__compile(_ec);
-	}
-
-	void __compile_source(string_view const & _src, std::error_code & _ec)
-	{
-		GLint src_size = _src.size();
-		GLchar const * src_data = _src.data();
-		_tfunc<__impl_shader_source>::proc(handle, 1, &src_data, &src_size);
-		this->__compile(_ec);
-	}
-
-	void __compile(std::error_code & _ec)
-	{
-		_tfunc<__impl_compile_shader>::proc(handle);
-		GLint is_compiled{};
-		_tfunc<__impl_get_shader_iv>::proc(handle, GL_COMPILE_STATUS, &is_compiled);
-		if (!is_compiled) _ec = error::shader_compilation_failure;
-	}
 
 private:
 
