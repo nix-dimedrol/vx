@@ -54,7 +54,8 @@ void load_shader_procs(_Predicate _pred)
 struct shader : noncopyable
 {
 	template<typename _InputIter>
-	explicit shader(GLenum _spec, _InputIter _begin, _InputIter _end, std::error_code & _ec)
+	explicit shader(GLenum _spec, _InputIter _begin, _InputIter _end,
+		std::error_code & _ec)
 		: shader(_spec)
 	{
 		this->__compile_source(_begin, _end, _ec);
@@ -69,14 +70,16 @@ struct shader : noncopyable
 		if (_ec) throw std::system_error{_ec};
 	}
 
-	explicit shader(GLenum _spec, std::initializer_list<string_view> _arr, std::error_code & _ec)
+	explicit shader(GLenum _spec, std::initializer_list<string_view> _arr,
+		std::error_code & _ec)
 		: shader(_spec, _arr.begin(), _arr.end(), _ec) {}
 
 	explicit shader(GLenum _spec, std::initializer_list<string_view> _arr)
 		: shader(_spec, _arr.begin(), _arr.end()) {}
 
 
-	explicit shader(GLenum _spec, string_view const & _src, std::error_code & _ec)
+	explicit shader(GLenum _spec, string_view const & _src,
+		std::error_code & _ec)
 		: shader(_spec)
 	{
 		this->__compile_source(_src, _ec);
@@ -90,13 +93,16 @@ struct shader : noncopyable
 		if (_ec) throw std::system_error{_ec};
 	}
 
-	template<typename _Logbuf>
-	shader & get_log(_Logbuf & _log)
+	template<typename _Alloc = std::allocator<char>>
+	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
 		_tfunc<__impl_get_shader_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
+		std::basic_string<char, std::char_traits<char>, _Alloc>
+			_str(log_length, 0, _alloc);
 		_tfunc<__impl_get_shader_infolog>::proc(handle,
-			log_length, &log_length, _log.get(log_length));
+			log_length, &log_length, const_cast<char*>(_str.c_str()));
+		return std::move(_str);
 	}
 
 	~shader(void) { if (handle) _tfunc<__impl_delete_shader>::proc(handle); }
@@ -110,7 +116,8 @@ protected:
 
 
 	template<typename _InputIter>
-	void __compile_source(_InputIter _begin, _InputIter _end, std::error_code & _ec)
+	void __compile_source(_InputIter _begin, _InputIter _end,
+		std::error_code & _ec)
 	{
 		size_t _src_cnt = std::distance(_begin, _end);
 		std::vector<GLint> _length_arr;
@@ -193,7 +200,8 @@ struct program : noncopyable
 		return *this;
 	}
 
-	program & link(std::initializer_list<GLuint> _arr, std::error_code & _ec)
+	program & link(std::initializer_list<GLuint> _arr,
+		std::error_code & _ec)
 	{
 		return this->link(_arr.begin(), _arr.end(), _ec);
 	}
@@ -203,14 +211,16 @@ struct program : noncopyable
 		return this->link(_arr.begin(), _arr.end());
 	}
 
-	template<typename _Logbuf>
-	program & get_log(_Logbuf & _log)
+	template<typename _Alloc = std::allocator<char>>
+	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
 		_tfunc<__impl_get_program_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
+		std::basic_string<char, std::char_traits<char>, _Alloc>
+			_str(log_length, 0, _alloc);
 		_tfunc<__impl_get_program_infolog>::proc(handle,
-			log_length, &log_length, _log.get(log_length));
-		return *this;
+			log_length, &log_length, const_cast<char*>(_str.c_str()));
+		return std::move(_str);
 	}
 
 	program & use(void)
