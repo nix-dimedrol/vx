@@ -105,7 +105,7 @@ struct __program_uniform_type_def<mat<_T, _C, _R>>
 	using type = GLvoid(*)(GLuint, GLint, GLsizei, GLboolean, _T const *);
 };
 
-template<typename>
+template<typename _T>
 struct __impl_program_uniform
 {
 	using proc_type = typename __program_uniform_type_def<_T>::type;
@@ -153,96 +153,52 @@ void load_uniform_procs(_Predicate _pred)
 
 
 template<typename _T, length_t _N>
-enable_if_uniform_valid_t<vec<_T, _N>> uniform
-	(GLint _loc, vec<_T, _N> const & _v)
+enable_if_uniform_valid_t<vec<_T, _N>> uniform(GLint _loc,
+	vec<_T, _N> const & _v)
 {
-	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, 1,
-		reinterpret_cast<_T const *>(&_v));
+	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc,
+		1, reinterpret_cast<_T const *>(&_v));
 }
 
 template<typename _T, length_t _N>
-enable_if_uniform_valid_t<vec<_T, _N>> uniform
-	(GLint _loc, vec<_T, _N> const * _arr, size_t _cnt)
+enable_if_uniform_valid_t<vec<_T, _N>> uniform(GLint _loc,
+	vec<_T, _N> const * _arr, size_t _cnt)
 {
-	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc, _cnt,
-		reinterpret_cast<_T const *>(_arr));
+	_tfunc<detail::__impl_uniform<vec<_T, _N>>>::proc(_loc,
+		_cnt, reinterpret_cast<_T const *>(_arr));
 }
 
 template<typename _T, length_t _C, length_t _R>
-enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform
-	(GLint _loc, mat<_T, _C, _R> const & _m, bool _trsp = false)
+enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform(GLint _loc,
+	mat<_T, _C, _R> const & _m, bool _trsp = false)
 {
-	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, 1, _trsp,
-		reinterpret_cast<_T const *>(&_m));
+	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc,
+		1, _trsp, reinterpret_cast<_T const *>(&_m));
 }
 
 template<typename _T, length_t _C, length_t _R>
-enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform
-	(GLint _loc, mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false)
+enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform(GLint _loc,
+	mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false)
 {
-	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc, _cnt, _trsp,
-		reinterpret_cast<_T const *>(_arr));
+	_tfunc<detail::__impl_uniform<mat<_T, _C, _R>>>::proc(_loc,
+		_cnt, _trsp, reinterpret_cast<_T const *>(_arr));
 }
 
 template<typename _T>
-enable_if_uniform_valid_t<_T> uniform(GLint _loc, _T _val)
+enable_if_uniform_valid_t<_T> uniform(GLint _loc,
+	_T _val)
 {
-	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc, 1, &_val);
+	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc,
+		1, &_val);
 }
 
 template<typename _T>
-enable_if_uniform_valid_t<_T> uniform(GLint _loc, _T const * _arr, size_t _cnt)
+enable_if_uniform_valid_t<_T> uniform(GLint _loc,
+	_T const * _arr, size_t _cnt)
 {
-	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc, _cnt, _arr);
+	_tfunc<detail::__impl_uniform<vec<_T, 1>>>::proc(_loc,
+		_cnt, _arr);
 }
-
-#ifdef VX_GL_DSA
-
-template<typename _T, length_t _N>
-enable_if_uniform_valid_t<vec<_T, _N>> program_uniform
-	(GLuint _prog, GLint _loc, vec<_T, _N> const & _v)
-{
-	_tfunc<detail::__impl_program_uniform<vec<_T, _N>>>::proc(_prog, _loc, 1,
-		reinterpret_cast<_T const *>(&_v));
-}
-
-template<typename _T, length_t _N>
-enable_if_uniform_valid_t<vec<_T, _N>> program_uniform
-	(GLuint _prog, GLint _loc, vec<_T, _N> const * _arr, size_t _cnt)
-{
-	_tfunc<detail::__impl_program_uniform<vec<_T, _N>>>::proc(_prog, _loc, _cnt,
-		reinterpret_cast<_T const *>(_arr));
-}
-
-template<typename _T, length_t _C, length_t _R>
-enable_if_uniform_valid_t<mat<_T, _C, _R>> program_uniform
-	(GLuint _prog, GLint _loc, mat<_T, _C, _R> const & _m, bool _trsp = false)
-{
-	_tfunc<detail::__impl_program_uniform<mat<_T, _C, _R>>>::proc(_prog, _loc, 1, _trsp,
-		reinterpret_cast<_T const *>(&_m));
-}
-
-template<typename _T, length_t _C, length_t _R>
-enable_if_uniform_valid_t<mat<_T, _C, _R>> program_uniform
-	(GLuint _prog, GLint _loc, mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false)
-{
-	_tfunc<detail::__impl_program_uniform<mat<_T, _C, _R>>>::proc(_prog, _loc, _cnt, _trsp,
-		reinterpret_cast<_T const *>(_arr));
-}
-
-template<typename _T>
-enable_if_uniform_valid_t<_T> program_uniform(GLuint _prog, GLint _loc, _T _val)
-{
-	_tfunc<detail::__impl_program_uniform<vec<_T, 1>>>::proc(_prog, _loc, 1, &_val);
-}
-
-template<typename _T>
-enable_if_uniform_valid_t<_T> program_uniform(GLuint _prog, GLint _loc, _T const * _arr, size_t _cnt)
-{
-	_tfunc<detail::__impl_program_uniform<vec<_T, 1>>>::proc(_prog, _loc, _cnt, _arr);
-}
-
-#endif
 
 } // namespace gl
 } // namespace vx

@@ -4,6 +4,7 @@
 
 #include "common.hpp"
 #include "error.hpp"
+#include "uniform.hpp"
 #include <vector>
 
 
@@ -241,6 +242,56 @@ struct program : noncopyable
 	~program(void) { if (handle) _tfunc<__impl_delete_program>::proc(handle); }
 
 	constexpr operator GLuint(void) const noexcept { return handle; }
+
+#ifdef VX_GL_DSA
+	template<typename _T, length_t _N>
+	enable_if_uniform_valid_t<vec<_T, _N>> uniform(GLint _loc,
+		vec<_T, _N> const & _v)
+	{
+		_tfunc<detail::__impl_program_uniform<vec<_T, _N>>>::proc(handle,
+			_loc, 1, reinterpret_cast<_T const *>(&_v));
+	}
+
+	template<typename _T, length_t _N>
+	enable_if_uniform_valid_t<vec<_T, _N>> uniform(GLint _loc,
+		vec<_T, _N> const * _arr, size_t _cnt)
+	{
+		_tfunc<detail::__impl_program_uniform<vec<_T, _N>>>::proc(handle,
+			_loc, _cnt, reinterpret_cast<_T const *>(_arr));
+	}
+
+	template<typename _T, length_t _C, length_t _R>
+	enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform(GLint _loc,
+		mat<_T, _C, _R> const & _m, bool _trsp = false)
+	{
+		_tfunc<detail::__impl_program_uniform<mat<_T, _C, _R>>>::proc(handle,
+			_loc, 1, _trsp, reinterpret_cast<_T const *>(&_m));
+	}
+
+	template<typename _T, length_t _C, length_t _R>
+	enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform(GLint _loc,
+		mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false)
+	{
+		_tfunc<detail::__impl_program_uniform<mat<_T, _C, _R>>>::proc(handle,
+			_loc, _cnt, _trsp, reinterpret_cast<_T const *>(_arr));
+	}
+
+	template<typename _T>
+	enable_if_uniform_valid_t<_T> uniform(GLint _loc,
+		_T _val)
+	{
+		_tfunc<detail::__impl_program_uniform<vec<_T, 1>>>::proc(handle,
+			_loc, 1, &_val);
+	}
+
+	template<typename _T>
+	enable_if_uniform_valid_t<_T> uniform(GLint _loc,
+		_T const * _arr, size_t _cnt)
+	{
+		_tfunc<detail::__impl_program_uniform<vec<_T, 1>>>::proc(handle,
+			_loc, _cnt, _arr);
+	}
+#endif
 
 private:
 
