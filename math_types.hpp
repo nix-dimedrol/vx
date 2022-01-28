@@ -27,6 +27,18 @@ using mat = glm::mat<_C, _R, _T>;
 using length_t = size_t;
 #endif
 
+template<typename _T> using vec2 = vec<_T, 2>;
+template<typename _T> using vec3 = vec<_T, 3>;
+template<typename _T> using vec4 = vec<_T, 4>;
+
+using vec2f = vec2<float>;
+using vec3f = vec3<float>;
+using vec4f = vec4<float>;
+
+using vec2i = vec2<int>;
+using vec3i = vec3<int>;
+using vec4i = vec4<int>;
+
 } // namespace vx
 
 
