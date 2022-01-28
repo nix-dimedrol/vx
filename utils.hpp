@@ -120,7 +120,7 @@ template<typename _T, _T... _Args>
 struct sum<std::integer_sequence<_T, _Args...>> : detail::__sum<_T, _Args...> {};
 
 
-template<typename ..._Args>
+template<typename... _Args>
 struct types_pack
 {
 	using is_same = detail::is_pack_same<_Args...>;
@@ -128,6 +128,20 @@ struct types_pack
 	template<typename _T>
 	using is_contain = detail::is_pack_contain<_T, _Args...>;
 };
+
+template<typename... _Args0, typename... _Args1>
+constexpr types_pack<_Args0..., _Args1...> __pack_concat_base
+	(types_pack<_Args0...>, types_pack<_Args1...>) noexcept { return {}; }
+
+
+template<typename...> struct __pack_concat;
+template<typename _Arg0, typename _Arg1>
+struct __pack_concat<_Arg0, _Arg1>
+	: decltype (__pack_concat_base(_Arg0{}, _Arg1{})) {};
+template<typename _Arg, typename... _Args>
+struct __pack_concat<_Arg, _Args...>
+	: decltype (__pack_concat_base(_Arg{}, __pack_concat<_Args...>{})){};
+
 
 
 namespace _ct
