@@ -44,14 +44,6 @@ using __program_types_pack = types_pack<__impl_create_program, __impl_delete_pro
 	__impl_program_parameter_i>;
 
 
-template<typename _Predicate>
-void load_shader_procs(_Predicate _pred)
-{
-	__load_procs(_pred, __shader_types_pack{});
-	__load_procs(_pred, __program_types_pack{});
-}
-
-
 namespace detail
 {
 

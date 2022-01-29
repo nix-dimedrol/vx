@@ -30,21 +30,6 @@ struct _tfunc : _T
 };
 template<typename _T> typename _tfunc<_T>::proc_type _tfunc<_T>::proc = nullptr;
 
-
-template<typename _T, typename _Predicate>
-void __load_proc(_Predicate _pred)
-{
-	using impl_type = _tfunc<_T>;
-	impl_type::proc = reinterpret_cast<typename impl_type::proc_type>(
-		_pred(impl_type::proc_name.data()));
-}
-
-template<typename _Predicate, typename... _Args>
-void __load_procs(_Predicate _pred, types_pack<_Args...>)
-{
-	int ret[]{0, ((void)__load_proc<_Args>(_pred), 0)...};
-}
-
 } // namespace vx
 } // namespace gl
 

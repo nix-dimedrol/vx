@@ -115,41 +115,7 @@ struct __impl_program_uniform
 
 #endif
 
-template<typename _T, typename _Predicate>
-void __load_uniform_procs(_Predicate _pred)
-{
-	_ct::__for<1, 4>([&](auto it) {
-		__load_proc<__impl_uniform<vec<_T, it.value>>>(_pred); });
-	_ct::__for<2, 3>([&](auto col) {
-		_ct::__for<2, 3>([&](auto row){
-			__load_proc<__impl_uniform<mat<_T, col.value, row.value>>>(_pred); });
-	});
-
-#ifdef VX_GL_DSA
-	_ct::__for<1, 4>([&](auto it) {
-		__load_proc<__impl_program_uniform<vec<_T, it.value>>>(_pred); });
-	_ct::__for<2, 3>([&](auto col) {
-		_ct::__for<2, 3>([&](auto row){
-			__load_proc<__impl_program_uniform<mat<_T, col.value, row.value>>>(_pred); });
-	});
-#endif
-}
-
-template<typename _Predicate, typename... _Args>
-void __load_uniform_procs(_Predicate _pred, types_pack<_Args...>)
-{
-	int ret[]{0, ((void)__load_uniform_procs<_Args>(_pred), 0)...};
-}
-
 } // namespace details
-
-
-
-template<typename _Predicate>
-void load_uniform_procs(_Predicate _pred)
-{
-	detail::__load_uniform_procs(_pred, valid_uniform_types{});
-}
 
 
 template<typename _T, length_t _N>
