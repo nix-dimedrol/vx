@@ -11,7 +11,8 @@ namespace errc
 
 struct graphics_error_category : std::error_category
 {
-	virtual char const * name(void) const noexcept override { return "graphics"; }
+	virtual char const * name(void) const noexcept override {
+		return "graphics"; }
 	virtual std::string message(int) const override;
 };
 
@@ -53,7 +54,8 @@ std::error_code make_error_code(basic_errors _e)
 namespace std
 {
 
-template<> struct is_error_code_enum<vx::gl::error::basic_errors> : true_type {};
+template<> struct is_error_code_enum<vx::gl::error::basic_errors>
+	: true_type {};
 
 } // namespace std
 
@@ -73,7 +75,6 @@ std::string vx::errc::graphics_error_category::message(int _ev) const
 		return "Unknown error";
 	}
 }
-
 
 
 #endif // VX_GL_ERROR_HPP

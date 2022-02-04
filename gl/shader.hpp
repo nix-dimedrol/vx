@@ -2,15 +2,12 @@
 #define VX_GL_SHADER_HPP
 
 
-#include "common.hpp"
 #include "error.hpp"
 #include "uniform.hpp"
 #include <vector>
 
 
-namespace vx
-{
-namespace gl
+namespace vx::gl
 {
 
 __VX_GL_DECL_PROC(create_shader, GLuint(*)(GLenum), "glCreateShader");
@@ -21,8 +18,9 @@ __VX_GL_DECL_PROC(get_shader_iv, GLvoid(*)(GLuint, GLenum, GLint*), "glGetShader
 __VX_GL_DECL_PROC(get_shader_infolog, GLvoid(*)(GLuint, GLsizei, GLsizei*, GLchar*), "glGetShaderInfoLog");
 
 
-using __shader_types_pack = types_pack<__impl_create_shader, __impl_delete_shader, __impl_shader_source,
-	__impl_compile_shader, __impl_get_shader_iv, __impl_get_shader_infolog>;
+using __shader_procs_types_pack = types_pack<__impl_create_shader,
+	__impl_delete_shader, __impl_shader_source, __impl_compile_shader,
+	__impl_get_shader_iv, __impl_get_shader_infolog>;
 
 
 __VX_GL_DECL_PROC(create_program, GLuint(*)(GLvoid), "glCreateProgram");
@@ -38,9 +36,10 @@ __VX_GL_DECL_PROC(get_uniform_location, GLint(*)(GLuint, GLchar const *), "glGet
 __VX_GL_DECL_PROC(program_parameter_i, GLvoid(*)(GLuint, GLenum, GLint), "glProgramParameteri");
 
 
-using __program_types_pack = types_pack<__impl_create_program, __impl_delete_program,
-	__impl_attach_shader, __impl_detach_shader, __impl_link_program, __impl_use_program,
-	__impl_get_program_iv, __impl_get_program_infolog, __impl_get_uniform_location,
+using __program_procs_types_pack = types_pack<__impl_create_program,
+	__impl_delete_program, __impl_attach_shader, __impl_detach_shader,
+	__impl_link_program, __impl_use_program, __impl_get_program_iv,
+	__impl_get_program_infolog, __impl_get_uniform_location,
 	__impl_program_parameter_i>;
 
 
@@ -48,7 +47,8 @@ namespace detail
 {
 
 template<typename _InputIter>
-void __set_shader_source(GLuint _handle, _InputIter _begin, _InputIter _end)
+static void __set_shader_source(GLuint _handle,
+	_InputIter _begin, _InputIter _end)
 {
 	size_t _src_cnt = std::distance(_begin, _end);
 	std::vector<GLint> _length_arr;
@@ -65,18 +65,19 @@ void __set_shader_source(GLuint _handle, _InputIter _begin, _InputIter _end)
 		_src_cnt, _data_arr.data(), _length_arr.data());
 }
 
-void __set_shader_source(GLuint _handle, string_view const & _src)
+static void __set_shader_source(GLuint _handle, string_view const & _src)
 {
 	GLint src_size = _src.size();
 	GLchar const * src_data = _src.data();
 	_tfunc<__impl_shader_source>::proc(_handle, 1, &src_data, &src_size);
 }
 
-void __compile_shader(GLuint _handle, std::error_code & _ec)
+static void __compile_shader(GLuint _handle, std::error_code & _ec)
 {
 	_tfunc<__impl_compile_shader>::proc(_handle);
 	GLint is_compiled{};
-	_tfunc<__impl_get_shader_iv>::proc(_handle, GL_COMPILE_STATUS, &is_compiled);
+	_tfunc<__impl_get_shader_iv>::proc(_handle,
+		GL_COMPILE_STATUS, &is_compiled);
 	if (!is_compiled) _ec = error::shader_compilation_failure;
 }
 
@@ -133,7 +134,8 @@ struct shader : noncopyable
 	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
-		_tfunc<__impl_get_shader_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
+		_tfunc<__impl_get_shader_iv>::proc(handle,
+			GL_INFO_LOG_LENGTH, &log_length);
 		std::basic_string<char, std::char_traits<char>, _Alloc>
 			_str(log_length, 0, _alloc);
 		_tfunc<__impl_get_shader_infolog>::proc(handle,
@@ -165,14 +167,13 @@ struct program : noncopyable
 	template<typename _Iter>
 	program & link(_Iter _begin, _Iter _end, bool _separable)
 	{
-		_tfunc<__impl_program_parameter_i>::proc(handle, GL_PROGRAM_SEPARABLE, _separable);
+		_tfunc<__impl_program_parameter_i>::proc(handle,
+			GL_PROGRAM_SEPARABLE, _separable);
 		return this->link(_begin, _end);
 	}
 
-	program & link(std::initializer_list<GLuint> _arr, bool _separable)
-	{
-		return this->link(_arr.begin(), _arr.end(), _separable);
-	}
+	program & link(std::initializer_list<GLuint> _arr, bool _separable) {
+		return this->link(_arr.begin(), _arr.end(), _separable); }
 #endif
 
 
@@ -183,7 +184,8 @@ struct program : noncopyable
 			_tfunc<__impl_attach_shader>::proc(handle, *it);
 		_tfunc<__impl_link_program>::proc(handle);
 		GLint is_linked{};
-		_tfunc<__impl_get_program_iv>::proc(handle, GL_LINK_STATUS, &is_linked);
+		_tfunc<__impl_get_program_iv>::proc(handle,
+			GL_LINK_STATUS, &is_linked);
 		if (!is_linked) _ec = error::program_link_failure;
 		for (auto it = _begin; it != _end; it++)
 			_tfunc<__impl_detach_shader>::proc(handle, *it);
@@ -200,21 +202,18 @@ struct program : noncopyable
 	}
 
 	program & link(std::initializer_list<GLuint> _arr,
-		std::error_code & _ec)
-	{
-		return this->link(_arr.begin(), _arr.end(), _ec);
-	}
+		std::error_code & _ec) {
+		return this->link(_arr.begin(), _arr.end(), _ec); }
 
-	program & link(std::initializer_list<GLuint> _arr)
-	{
-		return this->link(_arr.begin(), _arr.end());
-	}
+	program & link(std::initializer_list<GLuint> _arr) {
+		return this->link(_arr.begin(), _arr.end()); }
 
 	template<typename _Alloc = std::allocator<char>>
 	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
-		_tfunc<__impl_get_program_iv>::proc(handle, GL_INFO_LOG_LENGTH, &log_length);
+		_tfunc<__impl_get_program_iv>::proc(handle,
+			GL_INFO_LOG_LENGTH, &log_length);
 		std::basic_string<char, std::char_traits<char>, _Alloc>
 			_str(log_length, 0, _alloc);
 		_tfunc<__impl_get_program_infolog>::proc(handle,
@@ -228,8 +227,12 @@ struct program : noncopyable
 		return *this;
 	}
 
-	GLint get_uniform_location(string_view const & _name)
-	{ return _tfunc<__impl_get_uniform_location>::proc(handle, _name.data()); }
+	static void use_none(void) {
+		_tfunc<__impl_use_program>::proc(0); }
+
+	GLint get_uniform_location(string_view const & _name) {
+		return _tfunc<__impl_get_uniform_location>::proc(handle,
+			_name.data()); }
 
 	~program(void) { if (handle) _tfunc<__impl_delete_program>::proc(handle); }
 
@@ -238,51 +241,38 @@ struct program : noncopyable
 #ifdef VX_GL_DSA
 	template<typename _T, length_t _N>
 	enable_if_uniform_valid_t<vec<_T, _N>> uniform(GLint _loc,
-		vec<_T, _N> const & _v)
-	{
+		vec<_T, _N> const & _v) {
 		_tfunc<detail::__impl_program_uniform<vec<_T, _N>>>::proc(handle,
-			_loc, 1, reinterpret_cast<_T const *>(&_v));
-	}
+			_loc, 1, reinterpret_cast<_T const *>(&_v)); }
 
 	template<typename _T, length_t _N>
 	enable_if_uniform_valid_t<vec<_T, _N>> uniform(GLint _loc,
-		vec<_T, _N> const * _arr, size_t _cnt)
-	{
+		vec<_T, _N> const * _arr, size_t _cnt) {
 		_tfunc<detail::__impl_program_uniform<vec<_T, _N>>>::proc(handle,
-			_loc, _cnt, reinterpret_cast<_T const *>(_arr));
-	}
+			_loc, _cnt, reinterpret_cast<_T const *>(_arr)); }
 
 	template<typename _T, length_t _C, length_t _R>
 	enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform(GLint _loc,
-		mat<_T, _C, _R> const & _m, bool _trsp = false)
-	{
+		mat<_T, _C, _R> const & _m, bool _trsp = false) {
 		_tfunc<detail::__impl_program_uniform<mat<_T, _C, _R>>>::proc(handle,
-			_loc, 1, _trsp, reinterpret_cast<_T const *>(&_m));
-	}
+			_loc, 1, _trsp, reinterpret_cast<_T const *>(&_m)); }
 
 	template<typename _T, length_t _C, length_t _R>
 	enable_if_uniform_valid_t<mat<_T, _C, _R>> uniform(GLint _loc,
-		mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false)
-	{
+		mat<_T, _C, _R> const * _arr, size_t _cnt, bool _trsp = false) {
 		_tfunc<detail::__impl_program_uniform<mat<_T, _C, _R>>>::proc(handle,
-			_loc, _cnt, _trsp, reinterpret_cast<_T const *>(_arr));
-	}
+			_loc, _cnt, _trsp, reinterpret_cast<_T const *>(_arr)); }
+
+	template<typename _T>
+	enable_if_uniform_valid_t<_T> uniform(GLint _loc, _T _val) {
+		_tfunc<detail::__impl_program_uniform<vec<_T, 1>>>::proc(handle,
+			_loc, 1, &_val); }
 
 	template<typename _T>
 	enable_if_uniform_valid_t<_T> uniform(GLint _loc,
-		_T _val)
-	{
+		_T const * _arr, size_t _cnt) {
 		_tfunc<detail::__impl_program_uniform<vec<_T, 1>>>::proc(handle,
-			_loc, 1, &_val);
-	}
-
-	template<typename _T>
-	enable_if_uniform_valid_t<_T> uniform(GLint _loc,
-		_T const * _arr, size_t _cnt)
-	{
-		_tfunc<detail::__impl_program_uniform<vec<_T, 1>>>::proc(handle,
-			_loc, _cnt, _arr);
-	}
+			_loc, _cnt, _arr); }
 #endif
 
 private:
@@ -290,7 +280,6 @@ private:
 	GLuint handle;
 };
 
-} // namespace gl
-} // namespace vx
+} // namespace vx::gl
 
 #endif // VX_GL_SHADER_HPP

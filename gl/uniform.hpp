@@ -6,33 +6,22 @@
 #include "../math_types.hpp"
 
 
-namespace vx
-{
-namespace gl
+namespace vx::gl
 {
 
-using valid_uniform_types = types_pack<float, int, unsigned>;
+using valid_uniform_prime_types = types_pack<float, int, unsigned>;
 
 
 template<typename _T>
-struct is_uniform_type_valid : valid_uniform_types::is_contain<_T> {};
-
-
-template<typename> struct is_vec_type_valid : std::false_type {};
+struct is_uniform_type_valid : valid_uniform_prime_types::is_contain<_T> {};
 template<typename _T, length_t _N>
-struct is_vec_type_valid<vec<_T, _N>> : conjunction<is_uniform_type_valid<_T>,
+struct is_uniform_type_valid<vec<_T, _N>>
+	: conjunction<is_uniform_type_valid<_T>,
 	bool_constant<(_N >= 2 && _N <= 4)>> {};
-
-template<typename _T, length_t _N>
-struct is_uniform_type_valid<vec<_T, _N>> : is_vec_type_valid<vec<_T, _N>> {};
-
-template<typename> struct is_mat_type_valid : std::false_type {};
 template<typename _T, length_t _C, length_t _R>
-struct is_mat_type_valid<mat<_T, _C, _R>> : conjunction<is_uniform_type_valid<_T>,
+struct is_uniform_type_valid<mat<_T, _C, _R>>
+	: conjunction<is_uniform_type_valid<_T>,
 	bool_constant<(_C >= 2 && _C <= 4 && _R >= 2 && _R <= 4)>> {};
-
-template<typename _T, length_t _C, length_t _R>
-struct is_uniform_type_valid<mat<_T, _C, _R>> : is_mat_type_valid<mat<_T, _C, _R>> {};
 
 
 template<typename _T, typename _U = void>
@@ -48,24 +37,24 @@ namespace detail
 template<typename _T>
 constexpr auto __get_proc_type_suffix(void) noexcept;
 
-template<> constexpr auto __get_proc_type_suffix<float>(void) noexcept { return _ct::make_string('f'); }
-template<> constexpr auto __get_proc_type_suffix<int>(void) noexcept { return _ct::make_string('i'); }
-template<> constexpr auto __get_proc_type_suffix<unsigned>(void) noexcept { return _ct::make_string("ui"); }
+template<> constexpr auto __get_proc_type_suffix<float>(void) noexcept { return __ct::make_string('f'); }
+template<> constexpr auto __get_proc_type_suffix<int>(void) noexcept { return __ct::make_string('i'); }
+template<> constexpr auto __get_proc_type_suffix<unsigned>(void) noexcept { return __ct::make_string("ui"); }
 
 
 template<typename> struct __uniform_type_name;
 template<typename _T, length_t _N>
 struct __uniform_type_name<vec<_T, _N>>
 {
-	static constexpr auto value = _ct::make_string(_N + '0')
+	static constexpr auto value = __ct::make_string(_N + '0')
 		+ __get_proc_type_suffix<_T>() + 'v';
 };
 template<typename _T, length_t _C, length_t _R>
 struct __uniform_type_name<mat<_T, _C, _R>>
 {
-	static constexpr auto value = _ct::make_string("Matrix")
-		+ _ct::__if<bool_constant<(_C == _R)>>(char(_C + '0'),
-			_ct::make_string(_C + '0') + 'x' + char(_R + '0'))
+	static constexpr auto value = __ct::make_string("Matrix")
+		+ __ct::__if<bool_constant<(_C == _R)>>(char(_C + '0'),
+			__ct::make_string(_C + '0') + 'x' + char(_R + '0'))
 			+ __get_proc_type_suffix<_T>() + 'v';
 };
 
@@ -87,7 +76,7 @@ template<typename _T>
 struct __impl_uniform
 {
 	using proc_type = typename __uniform_type_def<_T>::type;
-	static constexpr auto proc_name = vx::_ct::make_string("glUniform")
+	static constexpr auto proc_name = vx::__ct::make_string("glUniform")
 		+ __uniform_type_name<_T>::value;
 };
 
@@ -166,7 +155,6 @@ enable_if_uniform_valid_t<_T> uniform(GLint _loc,
 		_cnt, _arr);
 }
 
-} // namespace gl
-} // namespace vx
+} // namespace vx::gl
 
 #endif // VX_GL_UNIFORM_HPP

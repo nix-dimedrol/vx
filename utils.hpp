@@ -43,9 +43,11 @@ protected:
 
 
 #if __cplusplus >= 201703L
+
 using std::string_view;
 using std::conjunction;
 using std::disjunction;
+
 #else
 
 #ifdef VX_USE_BOOST
@@ -79,18 +81,16 @@ template<typename...> struct is_pack_same;
 template<typename _T> struct is_pack_same<_T> : std::true_type {};
 template<typename _Arg0, typename _Arg1, typename... _Args>
 struct is_pack_same<_Arg0, _Arg1, _Args...>
-	: conjunction<std::is_same<_Arg0, _Arg1>, is_pack_same<_Arg1, _Args...>> {};
+	: conjunction<std::is_same<_Arg0, _Arg1>,
+		is_pack_same<_Arg1, _Args...>> {};
 
 
 template<typename _T, _T...> struct __sum;
-template<typename _T> struct __sum<_T>
-{
-	static constexpr _T value = _T{};
-};
-template<typename _T, _T _Arg0, _T... _Args> struct __sum<_T, _Arg0, _Args...>
-{
-	static constexpr _T value = _Arg0 + __sum<_T, _Args...>::value;
-};
+template<typename _T> struct __sum<_T> {
+	static constexpr _T value = _T{}; };
+template<typename _T, _T _Arg0, _T... _Args>
+struct __sum<_T, _Arg0, _Args...> {
+	static constexpr _T value = _Arg0 + __sum<_T, _Args...>::value; };
 
 
 template<typename>
@@ -113,11 +113,10 @@ struct __if_impl<std::false_type>
 } // namespace detail
 
 
-template<typename>
-struct sum;
-
+template<typename> struct sum;
 template<typename _T, _T... _Args>
-struct sum<std::integer_sequence<_T, _Args...>> : detail::__sum<_T, _Args...> {};
+struct sum<std::integer_sequence<_T, _Args...>>
+	: detail::__sum<_T, _Args...> {};
 
 
 template<typename... _Args>
@@ -130,147 +129,140 @@ struct types_pack
 };
 
 template<typename... _Args0, typename... _Args1>
-constexpr types_pack<_Args0..., _Args1...> __pack_concat_base
+static constexpr types_pack<_Args0..., _Args1...> __pack_concat_impl
 	(types_pack<_Args0...>, types_pack<_Args1...>) noexcept { return {}; }
 
 
-template<typename...> struct __pack_concat;
+template<typename...> struct types_pack_concat;
 template<typename _Arg0, typename _Arg1>
-struct __pack_concat<_Arg0, _Arg1>
-	: decltype (__pack_concat_base(_Arg0{}, _Arg1{})) {};
+struct types_pack_concat<_Arg0, _Arg1>
+	: decltype (__pack_concat_impl(_Arg0{}, _Arg1{})) {};
 template<typename _Arg, typename... _Args>
-struct __pack_concat<_Arg, _Args...>
-	: decltype (__pack_concat_base(_Arg{}, __pack_concat<_Args...>{})){};
+struct types_pack_concat<_Arg, _Args...>
+	: decltype (__pack_concat_impl(_Arg{}, types_pack_concat<_Args...>{})){};
 
 
-
-namespace _ct
+namespace __ct
 {
 
 
 template<size_t _First, typename _Predicate, size_t... _Args>
-void __for(_Predicate _pred, std::index_sequence<_Args...>)
-{
-	int ret[]{0, ((void)_pred(std::integral_constant<size_t, _First + _Args>{}), 0)...};
-}
+void __for(_Predicate _pred, std::index_sequence<_Args...>) {
+	int ret[]{0, ((void)_pred(
+		std::integral_constant<size_t, _First + _Args>{}), 0)...}; }
 
 template<size_t _First, size_t _N, typename _Predicate>
-void __for(_Predicate _pred)
-{
-	__for<_First>(_pred, std::make_index_sequence<_N>{});
-}
+void __for(_Predicate _pred) {
+	__for<_First>(_pred, std::make_index_sequence<_N>{}); }
 
 
 template<typename _Cond, typename _Then, typename _Else>
-constexpr auto __if(_Then&& _th, _Else&& _el)
-{
-	return detail::__if_impl<_Cond>::get(_th, _el);
-}
+constexpr auto __if(_Then&& _th, _Else&& _el) {
+	return detail::__if_impl<_Cond>::get(_th, _el); }
 
 
 template<typename _T, size_t _N>
-struct s_array : std::array<_T, _N>
+struct __array : std::array<_T, _N>
 {
 	using base_type       = std::array<_T, _N>;
 	using value_type      = typename base_type::value_type;
 	using reference       = typename base_type::reference;
 	using const_reference = typename base_type::const_reference;
 
-	constexpr explicit s_array(void) noexcept {}
+	constexpr explicit __array(void) noexcept {}
 
 	template<size_t _M, typename = std::enable_if_t<(_N >= _M)>>
-	constexpr explicit s_array(value_type const (&_ar)[_M]) noexcept
-		: s_array(_ar, std::make_index_sequence<_M>{}) {}
+	constexpr explicit __array(value_type const (&_ar)[_M]) noexcept
+		: __array(_ar, std::make_index_sequence<_M>{}) {}
 
-	template<size_t _M, size_t _L, typename = std::enable_if_t<(_N >= _M + _L)>>
-	constexpr explicit s_array(
-		s_array<value_type, _M> const & _v1, s_array<value_type, _L> const & _v2) noexcept
-		: s_array(_v1, std::make_index_sequence<_M>{}, _v2, std::make_index_sequence<_L>{}) {}
+	template<size_t _M, size_t _L,
+		typename = std::enable_if_t<(_N >= _M + _L)>>
+	constexpr explicit __array(__array<value_type, _M> const & _v1,
+		__array<value_type, _L> const & _v2) noexcept
+		: __array(_v1, std::make_index_sequence<_M>{}, _v2,
+			std::make_index_sequence<_L>{}) {}
 
 	template<size_t _M, size_t... _Args,
-		typename = std::enable_if_t<_N >= sum<std::index_sequence<_M, _Args...>>::value>>
-	constexpr explicit s_array(s_array<value_type, _M> const & _first,
-		s_array<value_type, _Args> const &... _other) noexcept
-		: s_array(_first, s_array<value_type, sum<std::index_sequence<_Args...>>::value>(_other...)) {}
+		typename = std::enable_if_t<_N >=
+			sum<std::index_sequence<_M, _Args...>>::value>>
+	constexpr explicit __array(__array<value_type, _M> const & _first,
+		__array<value_type, _Args> const &... _other) noexcept
+		: __array(_first, __array<value_type,
+			sum<std::index_sequence<_Args...>>::value>(_other...)) {}
 
 	template<size_t _M, typename = std::enable_if_t<(_M > _N)>>
-	constexpr explicit s_array(s_array<value_type, _M> const & _v) noexcept
-		: s_array(_v, std::make_index_sequence<_N>{}) {}
+	constexpr explicit __array(__array<value_type, _M> const & _v) noexcept
+		: __array(_v, std::make_index_sequence<_N>{}) {}
 
 	template<typename _U>
-	constexpr explicit s_array(s_array<_U, _N> const & _v) noexcept
-		: s_array(_v, std::make_index_sequence<_N>{}) {}
+	constexpr explicit __array(__array<_U, _N> const & _v) noexcept
+		: __array(_v, std::make_index_sequence<_N>{}) {}
 
 protected:
 
 	template<size_t _M, size_t... _Indices>
-	constexpr explicit s_array(value_type const (&_ar)[_M], std::index_sequence<_Indices...>) noexcept
+	constexpr explicit __array(value_type const (&_ar)[_M],
+		std::index_sequence<_Indices...>) noexcept
 		: base_type{_ar[_Indices]...} {}
 
 	template<size_t _M, size_t _L, size_t... _Indices1, size_t... _Indices2>
-	constexpr explicit s_array(
-		s_array<value_type, _M> const & _v1, std::index_sequence<_Indices1...>,
-		s_array<value_type, _L> const & _v2, std::index_sequence<_Indices2...>) noexcept
-		: base_type{std::get<_Indices1>(_v1)..., std::get<_Indices2>(_v2)...} {}
+	constexpr explicit __array(__array<value_type, _M> const & _v1,
+		std::index_sequence<_Indices1...>, __array<value_type, _L> const & _v2,
+		std::index_sequence<_Indices2...>) noexcept
+		: base_type{std::get<_Indices1>(_v1)...,
+			std::get<_Indices2>(_v2)...} {}
 
-	template<size_t _M, size_t... _Indices, typename = std::enable_if_t<(_M > _N)>>
-	constexpr explicit s_array(s_array<value_type, _M> const & _v, std::index_sequence<_Indices...>) noexcept
+	template<size_t _M, size_t... _Indices,
+		typename = std::enable_if_t<(_M > _N)>>
+	constexpr explicit __array(__array<value_type, _M> const & _v,
+		std::index_sequence<_Indices...>) noexcept
 		: base_type({std::get<_Indices>(_v)...}) {}
 
 	template<typename _U, size_t... _Indices>
-	constexpr explicit s_array(s_array<_U, _N> const & _v, std::index_sequence<_Indices...>) noexcept
+	constexpr explicit __array(__array<_U, _N> const & _v,
+		std::index_sequence<_Indices...>) noexcept
 		: base_type({std::get<_Indices>(_v)...}) {}
 };
 
 
 template<size_t _N>
-using s_string = s_array<char, _N>;
+using __string = __array<char, _N>;
 
 
 template<size_t _N>
-constexpr auto make_string(char const (&_arr)[_N]) noexcept
-{
-	return s_string<_N>(_arr);
-}
+constexpr auto make_string(char const (&_arr)[_N]) noexcept {
+	return __string<_N>(_arr); }
 
-constexpr auto make_string(char _s) noexcept
-{
-	return s_string<2>({_s, 0});
-}
+constexpr auto make_string(char _s) noexcept {
+	return __string<2>({_s, 0}); }
 
 template<size_t _N, size_t _M>
-constexpr auto make_string(s_string<_N> const & _v1, s_string<_M> const & _v2) noexcept
-{
-	return s_string<_N + _M - 1>(s_string<_N - 1>(_v1), _v2);
-}
+constexpr auto make_string(
+	__string<_N> const & _v1, __string<_M> const & _v2) noexcept {
+		return __string<_N + _M - 1>(__string<_N - 1>(_v1), _v2); }
 
-template<size_t _Arg0, size_t... _Args, typename = std::enable_if_t<(sizeof... (_Args) > 1)>>
-constexpr auto make_string(s_string<_Arg0> const & _first, s_string<_Args> const &... _other) noexcept
-{
-	return make_string(_first, make_string(_other...));
-}
+template<size_t _Arg0, size_t... _Args,
+	typename = std::enable_if_t<(sizeof... (_Args) > 1)>>
+constexpr auto make_string(__string<_Arg0> const & _first,
+	__string<_Args> const &... _other) noexcept {
+		return make_string(_first, make_string(_other...)); }
 
 
 template<size_t _N, size_t _M>
-constexpr auto operator+ (_ct::s_string<_N> const & _v1, _ct::s_string<_M> const & _v2) noexcept
-{
-	return _ct::make_string(_v1, _v2);
-}
+constexpr auto operator+ (__ct::__string<_N> const & _v1,
+	__ct::__string<_M> const & _v2) noexcept {
+		return __ct::make_string(_v1, _v2); }
 
 template<size_t _N>
-constexpr auto operator+ (_ct::s_string<_N> const & _v1, char _c) noexcept
-{
-	return _ct::make_string(_v1, _ct::make_string(_c));
-}
+constexpr auto operator+ (__ct::__string<_N> const & _v1, char _c) noexcept {
+	return __ct::make_string(_v1, __ct::make_string(_c)); }
 
 template<size_t _N>
-constexpr auto operator+ (char _c, _ct::s_string<_N> const & _v1) noexcept
-{
-	return _ct::make_string(_ct::make_string(_c), _v1);
-}
+constexpr auto operator+ (char _c, __ct::__string<_N> const & _v1) noexcept {
+	return __ct::make_string(__ct::make_string(_c), _v1); }
 
 
-} // namespace _ct
+} // namespace __ct
 } // namespace vx
 
 #endif // VX_UTILS_HPP

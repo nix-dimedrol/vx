@@ -12,14 +12,14 @@
 #include "../utils.hpp"
 
 
+
 #define __VX_GL_DECL_PROC(impl_name, _proc_type, _proc_name) struct __impl_ ## impl_name { \
 		using proc_type = _proc_type; \
-		static constexpr auto proc_name = _ct::make_string(_proc_name); \
+		static constexpr auto proc_name = __ct::make_string(_proc_name); \
 	}
 
-namespace vx
-{
-namespace gl
+
+namespace vx::gl
 {
 
 template<typename _T>
@@ -28,10 +28,9 @@ struct _tfunc : _T
 	using proc_type = typename _T::proc_type;
 	static proc_type proc;
 };
-template<typename _T> typename _tfunc<_T>::proc_type _tfunc<_T>::proc = nullptr;
+template<typename _T> typename _tfunc<_T>::proc_type _tfunc<_T>::proc{};
 
-} // namespace vx
-} // namespace gl
+} // namespace vx::gl
 
 
 #endif // VX_GL_COMMON_HPP

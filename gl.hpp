@@ -1,9 +1,8 @@
 #ifndef VX_GL_HPP
 #define VX_GL_HPP
 
-#include "gl/uniform.hpp"
+
 #include "gl/shader.hpp"
-#include "gl/error.hpp"
 
 
 #ifdef VX_GL_DSA
@@ -15,16 +14,14 @@
 #endif
 
 
-namespace vx
-{
-namespace gl
+namespace vx::gl
 {
 
 namespace detail
 {
 
 template<typename _T, typename _Predicate>
-void __load_proc(_Predicate _pred)
+static void __load_proc(_Predicate _pred)
 {
 	using impl_type = _tfunc<_T>;
 	impl_type::proc = reinterpret_cast<typename impl_type::proc_type>(
@@ -32,37 +29,35 @@ void __load_proc(_Predicate _pred)
 }
 
 template<typename _Predicate, typename... _Args>
-void __load_procs(_Predicate _pred, types_pack<_Args...>)
+static void __load_procs(_Predicate _pred, types_pack<_Args...>)
 {
 	int ret[]{0, ((void)__load_proc<_Args>(_pred), 0)...};
 }
 
 template<typename _T, typename _Predicate>
-void __load_uniform_procs(_Predicate _pred)
+static void __load_uniform_procs(_Predicate _pred)
 {
-	_ct::__for<1, 4>([&](auto it) {
+	__ct::__for<1, 4>([&](auto it) {
 		__load_proc<__impl_uniform<vec<_T, it.value>>>(_pred);
 	});
-	_ct::__for<2, 3>([&](auto col) {
-		_ct::__for<2, 3>([&](auto row){
+	__ct::__for<2, 3>([&](auto col) {
+		__ct::__for<2, 3>([&](auto row){
 			__load_proc<__impl_uniform<mat<_T, col.value, row.value>>>(_pred);
 		});
 	});
 
 #ifdef VX_GL_DSA
 	_ct::__for<1, 4>([&](auto it) {
-		__load_proc<__impl_program_uniform<vec<_T, it.value>>>(_pred);
-	});
+		__load_proc<__impl_program_uniform<vec<_T, it.value>>>(_pred); });
 	_ct::__for<2, 3>([&](auto col) {
 		_ct::__for<2, 3>([&](auto row){
-			__load_proc<__impl_program_uniform<mat<_T, col.value, row.value>>>(_pred);
-		});
-	});
+			__load_proc<__impl_program_uniform<
+				mat<_T, col.value, row.value>>>(_pred); }); });
 #endif
 }
 
 template<typename _Predicate, typename... _Args>
-void __load_uniform_procs(_Predicate _pred, types_pack<_Args...>)
+static void __load_uniform_procs(_Predicate _pred, types_pack<_Args...>)
 {
 	int ret[]{0, ((void)__load_uniform_procs<_Args>(_pred), 0)...};
 }
@@ -82,9 +77,9 @@ void load_procs(_Predicate _pred, std::error_code & _ec)
 		_ec = error::invalid_context_version;
 		return;
 	}
-	detail::__load_procs(_pred,
-		__pack_concat<__program_types_pack, __shader_types_pack>{});
-	detail::__load_uniform_procs(_pred, valid_uniform_types{});
+	detail::__load_procs(_pred, types_pack_concat<__program_procs_types_pack,
+		__shader_procs_types_pack>{});
+	detail::__load_uniform_procs(_pred, valid_uniform_prime_types{});
 }
 
 template<typename _Predicate>
@@ -95,7 +90,6 @@ void load_procs(_Predicate _pred)
 	if (_ec) throw std::system_error{_ec};
 }
 
-} // namespace gl
-} // namespace vx
+} // namespace vx::gl
 
 #endif
