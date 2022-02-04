@@ -5,13 +5,8 @@
 #include "gl/shader.hpp"
 
 
-#ifdef VX_GL_DSA
 #define VX_GL_REQ_MAJOR 4
 #define VX_GL_REQ_MINOR 2
-#else
-#define VX_GL_REQ_MAJOR 3
-#define VX_GL_REQ_MINOR 3
-#endif
 
 
 namespace vx::gl
@@ -38,22 +33,11 @@ template<typename _T, typename _Predicate>
 static void __load_uniform_procs(_Predicate _pred)
 {
 	__ct::__for<1, 4>([&](auto it) {
-		__load_proc<__impl_uniform<vec<_T, it.value>>>(_pred);
-	});
+		__load_proc<__impl_program_uniform<vec<_T, it.value>>>(_pred); });
 	__ct::__for<2, 3>([&](auto col) {
 		__ct::__for<2, 3>([&](auto row){
-			__load_proc<__impl_uniform<mat<_T, col.value, row.value>>>(_pred);
-		});
-	});
-
-#ifdef VX_GL_DSA
-	_ct::__for<1, 4>([&](auto it) {
-		__load_proc<__impl_program_uniform<vec<_T, it.value>>>(_pred); });
-	_ct::__for<2, 3>([&](auto col) {
-		_ct::__for<2, 3>([&](auto row){
 			__load_proc<__impl_program_uniform<
 				mat<_T, col.value, row.value>>>(_pred); }); });
-#endif
 }
 
 template<typename _Predicate, typename... _Args>

@@ -261,6 +261,15 @@ template<size_t _N>
 constexpr auto operator+ (char _c, __ct::__string<_N> const & _v1) noexcept {
 	return __ct::make_string(__ct::make_string(_c), _v1); }
 
+template<size_t _N, size_t _M>
+constexpr auto operator+ (__ct::__string<_N> const & _v1,
+	char const (&_arr)[_M]) noexcept {
+		return __ct::make_string(_v1, __ct::make_string(_arr)); }
+
+template<size_t _N, size_t _M>
+constexpr auto operator+ (char const (&_arr)[_M],
+	__ct::__string<_N> const & _v1) noexcept {
+		return __ct::make_string(__ct::make_string(_arr), _v1); }
 
 } // namespace __ct
 } // namespace vx

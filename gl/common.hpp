@@ -13,10 +13,11 @@
 
 
 
-#define __VX_GL_DECL_PROC(impl_name, _proc_type, _proc_name) struct __impl_ ## impl_name { \
+#define __VX_GL_DECL_PROC(impl_name, _proc_type, _proc_name) struct __impl_##impl_name { \
 		using proc_type = _proc_type; \
 		static constexpr auto proc_name = __ct::make_string(_proc_name); \
 	}
+#define __VX_GL_CALL(impl_name) _tfunc<__impl_##impl_name>::proc
 
 
 namespace vx::gl
