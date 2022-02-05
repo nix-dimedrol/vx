@@ -6,6 +6,7 @@ extern "C"
 #include "lua.h"
 }
 
+#include "utils.hpp"
 #include <functional>
 
 
@@ -16,6 +17,33 @@ namespace vx
 {
 namespace lua
 {
+
+struct nil : std::false_type {};
+
+using integer_t = lua_Integer;
+using floating_t = lua_Number;
+
+
+template<typename _T> void push(lua_State*, _T);
+
+template<> void push(lua_State* _L, nil) {
+	lua_pushnil(_L); }
+template<> void push(lua_State* _L, bool _val){
+	lua_pushboolean(_L, _val); }
+template<> void push(lua_State* _L, integer_t _val) {
+	lua_pushinteger(_L, _val); }
+template<> void push(lua_State* _L, floating_t _val) {
+	lua_pushnumber(_L, _val); }
+template<> void push(lua_State* _L, string_view const & _val) {
+	lua_pushlstring(_L, _val.data(), _val.size()); }
+
+template<typename... _Args> void push(lua_State* _L,
+	std::tuple<_Args...> const & _val)
+{
+	__ct::__for<0, std::size(_val)>([&](auto it) {
+		push(_L, std::get<it.value>(_val)); });
+}
+
 
 using proc_type = std::function<int(lua_State*)>;
 
@@ -51,7 +79,7 @@ void register_proc_table(lua_State* _L)
 	lua_rawsetp(_L, LUA_REGISTRYINDEX, __proc_registry_mark);
 }
 
-void push_proc(lua_State* _L, proc_type const & _func)
+template<> void push(lua_State* _L, proc_type const & _func)
 {
 	new (lua_newuserdata(_L, sizeof (proc_type))) proc_type{_func};
 	lua_rawgetp(_L, LUA_REGISTRYINDEX, __proc_registry_mark);
