@@ -20,9 +20,6 @@ namespace lua
 
 struct nil : std::false_type {};
 
-using integer_t = lua_Integer;
-using floating_t = lua_Number;
-
 
 template<typename _T> void push(lua_State*, _T);
 
@@ -30,9 +27,9 @@ template<> void push(lua_State* _L, nil) {
 	lua_pushnil(_L); }
 template<> void push(lua_State* _L, bool _val){
 	lua_pushboolean(_L, _val); }
-template<> void push(lua_State* _L, integer_t _val) {
+template<> void push(lua_State* _L, lua_Integer _val) {
 	lua_pushinteger(_L, _val); }
-template<> void push(lua_State* _L, floating_t _val) {
+template<> void push(lua_State* _L, lua_Number _val) {
 	lua_pushnumber(_L, _val); }
 template<> void push(lua_State* _L, string_view const & _val) {
 	lua_pushlstring(_L, _val.data(), _val.size()); }
