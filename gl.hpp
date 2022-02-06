@@ -9,6 +9,11 @@
 #define VX_GL_REQ_MINOR 2
 
 
+#ifdef VX_GL_EXPAND_DIRECT_CALLS
+#define VX_GL_CALL ::vx::gl::__VX_GL_CALL
+#endif
+
+
 namespace vx::gl
 {
 

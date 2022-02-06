@@ -18,7 +18,7 @@ __VX_GL_DECL_PROC(get_shader_iv, GLvoid(*)(GLuint, GLenum, GLint*), "glGetShader
 __VX_GL_DECL_PROC(get_shader_infolog, GLvoid(*)(GLuint, GLsizei, GLsizei*, GLchar*), "glGetShaderInfoLog");
 
 
-__VX_GL_DECL_PROC_PACK(__shader_procs_pack, create_shader, delete_shader,
+__VX_GL_DECL_PROC_PACK(__shader_procs_pack) (create_shader, delete_shader,
 	shader_source, compile_shader, get_shader_iv, get_shader_infolog);
 
 
@@ -35,7 +35,7 @@ __VX_GL_DECL_PROC(get_uniform_location, GLint(*)(GLuint, GLchar const *), "glGet
 __VX_GL_DECL_PROC(program_parameter_i, GLvoid(*)(GLuint, GLenum, GLint), "glProgramParameteri");
 
 
-__VX_GL_DECL_PROC_PACK(__program_procs_pack, create_program, delete_program,
+__VX_GL_DECL_PROC_PACK(__program_procs_pack) (create_program, delete_program,
 	attach_shader, detach_shader, link_program, use_program, get_program_iv,
 	get_program_infolog, get_uniform_location, program_parameter_i);
 
@@ -73,8 +73,7 @@ static void __compile_shader(GLuint _handle, std::error_code & _ec)
 {
 	__VX_GL_CALL(compile_shader)(_handle);
 	GLint is_compiled{};
-	__VX_GL_CALL(get_shader_iv)(_handle,
-		GL_COMPILE_STATUS, &is_compiled);
+	__VX_GL_CALL(get_shader_iv)(_handle, GL_COMPILE_STATUS, &is_compiled);
 	if (!is_compiled) _ec = error::shader_compilation_failure;
 }
 
@@ -131,8 +130,7 @@ struct shader : noncopyable
 	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
-		__VX_GL_CALL(get_shader_iv)(handle,
-			GL_INFO_LOG_LENGTH, &log_length);
+		__VX_GL_CALL(get_shader_iv)(handle, GL_INFO_LOG_LENGTH, &log_length);
 		std::basic_string<char, std::char_traits<char>, _Alloc>
 			_str(log_length, 0, _alloc);
 		__VX_GL_CALL(get_shader_infolog)(handle,
@@ -181,8 +179,7 @@ struct program : noncopyable
 			__VX_GL_CALL(attach_shader)(handle, *it);
 		__VX_GL_CALL(link_program)(handle);
 		GLint is_linked{};
-		__VX_GL_CALL(get_program_iv)(handle,
-			GL_LINK_STATUS, &is_linked);
+		__VX_GL_CALL(get_program_iv)(handle, GL_LINK_STATUS, &is_linked);
 		if (!is_linked) _ec = error::program_link_failure;
 		for (auto it = _begin; it != _end; it++)
 			__VX_GL_CALL(detach_shader)(handle, *it);
@@ -209,8 +206,7 @@ struct program : noncopyable
 	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
-		__VX_GL_CALL(get_program_iv)(handle,
-			GL_INFO_LOG_LENGTH, &log_length);
+		__VX_GL_CALL(get_program_iv)(handle, GL_INFO_LOG_LENGTH, &log_length);
 		std::basic_string<char, std::char_traits<char>, _Alloc>
 			_str(log_length, 0, _alloc);
 		__VX_GL_CALL(get_program_infolog)(handle,
@@ -224,8 +220,7 @@ struct program : noncopyable
 		return *this;
 	}
 
-	static void use_none(void) {
-		__VX_GL_CALL(use_program)(0); }
+	static void use_none(void) { __VX_GL_CALL(use_program)(0); }
 
 	GLint get_uniform_location(string_view const & _name) {
 		return __VX_GL_CALL(get_uniform_location)(handle,
