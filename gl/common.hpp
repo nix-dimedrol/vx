@@ -12,12 +12,17 @@
 #include "../utils.hpp"
 
 
+#define __VX_GL_GET_IMPL(expr) VX_PP_CAT(__impl_, expr)
 
-#define __VX_GL_DECL_PROC(impl_name, _proc_type, _proc_name) struct __impl_##impl_name { \
+#define __VX_GL_DECL_PROC(impl_name, _proc_type, _proc_name) \
+	struct __VX_GL_GET_IMPL(impl_name) { \
 		using proc_type = _proc_type; \
-		static constexpr auto proc_name = __ct::make_string(_proc_name); \
-	}
-#define __VX_GL_CALL(impl_name) _tfunc<__impl_##impl_name>::proc
+		static constexpr auto proc_name = __ct::make_string(_proc_name); }
+
+#define __VX_GL_DECL_PROC_PACK(pack_name, ...) using pack_name = \
+	types_pack<VX_PP_EVAL(VX_PP_MAP_LIST(__VX_GL_GET_IMPL, __VA_ARGS__))>
+
+#define __VX_GL_CALL(impl_name) _tfunc<__VX_GL_GET_IMPL(impl_name)>::proc
 
 
 namespace vx::gl

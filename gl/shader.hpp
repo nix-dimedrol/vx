@@ -18,9 +18,8 @@ __VX_GL_DECL_PROC(get_shader_iv, GLvoid(*)(GLuint, GLenum, GLint*), "glGetShader
 __VX_GL_DECL_PROC(get_shader_infolog, GLvoid(*)(GLuint, GLsizei, GLsizei*, GLchar*), "glGetShaderInfoLog");
 
 
-using __shader_procs_types_pack = types_pack<__impl_create_shader,
-	__impl_delete_shader, __impl_shader_source, __impl_compile_shader,
-	__impl_get_shader_iv, __impl_get_shader_infolog>;
+__VX_GL_DECL_PROC_PACK(__shader_procs_pack, create_shader, delete_shader,
+	shader_source, compile_shader, get_shader_iv, get_shader_infolog);
 
 
 __VX_GL_DECL_PROC(create_program, GLuint(*)(GLvoid), "glCreateProgram");
@@ -36,11 +35,9 @@ __VX_GL_DECL_PROC(get_uniform_location, GLint(*)(GLuint, GLchar const *), "glGet
 __VX_GL_DECL_PROC(program_parameter_i, GLvoid(*)(GLuint, GLenum, GLint), "glProgramParameteri");
 
 
-using __program_procs_types_pack = types_pack<__impl_create_program,
-	__impl_delete_program, __impl_attach_shader, __impl_detach_shader,
-	__impl_link_program, __impl_use_program, __impl_get_program_iv,
-	__impl_get_program_infolog, __impl_get_uniform_location,
-	__impl_program_parameter_i>;
+__VX_GL_DECL_PROC_PACK(__program_procs_pack, create_program, delete_program,
+	attach_shader, detach_shader, link_program, use_program, get_program_iv,
+	get_program_infolog, get_uniform_location, program_parameter_i);
 
 
 namespace detail
@@ -61,7 +58,7 @@ static void __set_shader_source(GLuint _handle,
 		_length_arr.push_back(_view.size());
 		_data_arr.push_back(_view.data());
 	}
-	_tfunc<__impl_shader_source>::proc(_handle,
+	__VX_GL_CALL(shader_source)(_handle,
 		_src_cnt, _data_arr.data(), _length_arr.data());
 }
 
@@ -69,14 +66,14 @@ static void __set_shader_source(GLuint _handle, string_view const & _src)
 {
 	GLint src_size = _src.size();
 	GLchar const * src_data = _src.data();
-	_tfunc<__impl_shader_source>::proc(_handle, 1, &src_data, &src_size);
+	__VX_GL_CALL(shader_source)(_handle, 1, &src_data, &src_size);
 }
 
 static void __compile_shader(GLuint _handle, std::error_code & _ec)
 {
-	_tfunc<__impl_compile_shader>::proc(_handle);
+	__VX_GL_CALL(compile_shader)(_handle);
 	GLint is_compiled{};
-	_tfunc<__impl_get_shader_iv>::proc(_handle,
+	__VX_GL_CALL(get_shader_iv)(_handle,
 		GL_COMPILE_STATUS, &is_compiled);
 	if (!is_compiled) _ec = error::shader_compilation_failure;
 }
@@ -134,23 +131,23 @@ struct shader : noncopyable
 	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
-		_tfunc<__impl_get_shader_iv>::proc(handle,
+		__VX_GL_CALL(get_shader_iv)(handle,
 			GL_INFO_LOG_LENGTH, &log_length);
 		std::basic_string<char, std::char_traits<char>, _Alloc>
 			_str(log_length, 0, _alloc);
-		_tfunc<__impl_get_shader_infolog>::proc(handle,
+		__VX_GL_CALL(get_shader_infolog)(handle,
 			log_length, &log_length, const_cast<char*>(_str.c_str()));
 		return std::move(_str);
 	}
 
-	~shader(void) { if (handle) _tfunc<__impl_delete_shader>::proc(handle); }
+	~shader(void) { if (handle) __VX_GL_CALL(delete_shader)(handle); }
 
 	constexpr operator GLuint(void) const noexcept { return handle; }
 
 protected:
 
 	explicit shader(GLenum _spec)
-		: handle(_tfunc<__impl_create_shader>::proc(_spec)) {}
+		: handle(__VX_GL_CALL(create_shader)(_spec)) {}
 
 private:
 
@@ -161,13 +158,13 @@ private:
 struct program : noncopyable
 {
 	explicit program(void)
-		: handle(_tfunc<__impl_create_program>::proc()) {}
+		: handle(__VX_GL_CALL(create_program)()) {}
 
 #ifdef VX_GL_PROGRAM_SEPARABLE_EXT
 	template<typename _Iter>
 	program & link(_Iter _begin, _Iter _end, bool _separable)
 	{
-		_tfunc<__impl_program_parameter_i>::proc(handle,
+		__VX_GL_CALL(program_parameter_i)(handle,
 			GL_PROGRAM_SEPARABLE, _separable);
 		return this->link(_begin, _end);
 	}
@@ -181,14 +178,14 @@ struct program : noncopyable
 	program & link(_Iter _begin, _Iter _end, std::error_code & _ec)
 	{
 		for (auto it = _begin; it != _end; it++)
-			_tfunc<__impl_attach_shader>::proc(handle, *it);
-		_tfunc<__impl_link_program>::proc(handle);
+			__VX_GL_CALL(attach_shader)(handle, *it);
+		__VX_GL_CALL(link_program)(handle);
 		GLint is_linked{};
-		_tfunc<__impl_get_program_iv>::proc(handle,
+		__VX_GL_CALL(get_program_iv)(handle,
 			GL_LINK_STATUS, &is_linked);
 		if (!is_linked) _ec = error::program_link_failure;
 		for (auto it = _begin; it != _end; it++)
-			_tfunc<__impl_detach_shader>::proc(handle, *it);
+			__VX_GL_CALL(detach_shader)(handle, *it);
 		return *this;
 	}
 
@@ -212,29 +209,29 @@ struct program : noncopyable
 	auto log(_Alloc _alloc = _Alloc{})
 	{
 		GLint log_length{};
-		_tfunc<__impl_get_program_iv>::proc(handle,
+		__VX_GL_CALL(get_program_iv)(handle,
 			GL_INFO_LOG_LENGTH, &log_length);
 		std::basic_string<char, std::char_traits<char>, _Alloc>
 			_str(log_length, 0, _alloc);
-		_tfunc<__impl_get_program_infolog>::proc(handle,
+		__VX_GL_CALL(get_program_infolog)(handle,
 			log_length, &log_length, const_cast<char*>(_str.c_str()));
 		return std::move(_str);
 	}
 
 	program & use(void)
 	{
-		_tfunc<__impl_use_program>::proc(handle);
+		__VX_GL_CALL(use_program)(handle);
 		return *this;
 	}
 
 	static void use_none(void) {
-		_tfunc<__impl_use_program>::proc(0); }
+		__VX_GL_CALL(use_program)(0); }
 
 	GLint get_uniform_location(string_view const & _name) {
-		return _tfunc<__impl_get_uniform_location>::proc(handle,
+		return __VX_GL_CALL(get_uniform_location)(handle,
 			_name.data()); }
 
-	~program(void) { if (handle) _tfunc<__impl_delete_program>::proc(handle); }
+	~program(void) { if (handle) __VX_GL_CALL(delete_program)(handle); }
 
 	constexpr operator GLuint(void) const noexcept { return handle; }
 

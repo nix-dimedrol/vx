@@ -61,8 +61,8 @@ void load_procs(_Predicate _pred, std::error_code & _ec)
 		_ec = error::invalid_context_version;
 		return;
 	}
-	detail::__load_procs(_pred, types_pack_concat<__program_procs_types_pack,
-		__shader_procs_types_pack>{});
+	detail::__load_procs(_pred, types_pack_concat<__program_procs_pack,
+		__shader_procs_pack>{});
 	detail::__load_uniform_procs(_pred, valid_uniform_prime_types{});
 }
 
