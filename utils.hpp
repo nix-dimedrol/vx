@@ -18,6 +18,24 @@
 #include <boost/utility/string_view.hpp>
 #endif
 
+
+#define VX_PP_ARG_1(expr1, ...) expr1
+#define VX_PP_ARG_2(expr1, expr2, ...) expr2
+
+#define VX_PP_CAT(expr1, expr2) expr1 ## expr2
+
+#define __VX_PP_NOT_0 1, 1
+#define __VX_PP_NOT_IMPL(...) VX_PP_ARG_2(__VA_ARGS__, 0)
+#define VX_PP_NOT(expr) __VX_PP_NOT_IMPL(VX_PP_CAT(__VX_PP_NOT_, expr))
+
+#define VX_PP_BOOLEAN(expr) VX_PP_NOT(VX_PP_NOT(expr))
+
+#define __VX_PP_IF_IMPL_1(...) __VA_ARGS__
+#define __VX_PP_IF_IMPL_0(...)
+#define __VX_PP_IF_IMPL(cond) VX_PP_CAT(__VX_PP_IF_IMPL_, cond)
+#define VX_PP_IF(expr) __VX_PP_IF_IMPL(VX_PP_BOOLEAN(expr))
+
+
 namespace vx
 {
 
