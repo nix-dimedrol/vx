@@ -19,6 +19,20 @@
 #endif
 
 
+#define __VX_PP_EVAL0(...) __VA_ARGS__
+#define __VX_PP_EVAL1(...) __VX_PP_EVAL0(__VX_PP_EVAL0(__VA_ARGS__))
+#define __VX_PP_EVAL2(...) __VX_PP_EVAL1(__VX_PP_EVAL1(__VA_ARGS__))
+#define __VX_PP_EVAL3(...) __VX_PP_EVAL2(__VX_PP_EVAL2(__VA_ARGS__))
+#define __VX_PP_EVAL4(...) __VX_PP_EVAL3(__VX_PP_EVAL3(__VA_ARGS__))
+#define __VX_PP_EVAL5(...) __VX_PP_EVAL4(__VX_PP_EVAL4(__VA_ARGS__))
+#define __VX_PP_EVAL6(...) __VX_PP_EVAL5(__VX_PP_EVAL5(__VA_ARGS__))
+#define __VX_PP_EVAL7(...) __VX_PP_EVAL6(__VX_PP_EVAL6(__VA_ARGS__))
+#define __VX_PP_EVAL8(...) __VX_PP_EVAL7(__VX_PP_EVAL7(__VA_ARGS__))
+
+#define VX_PP_EVAL __VX_PP_EVAL8
+#define VX_PP_EVAL_DEPTH 0x100
+
+
 #define VX_PP_ARG_1(expr1, ...) expr1
 #define VX_PP_ARG_2(expr1, expr2, ...) expr2
 
@@ -34,6 +48,23 @@
 #define __VX_PP_IF_IMPL_0(...)
 #define __VX_PP_IF_IMPL(cond) VX_PP_CAT(__VX_PP_IF_IMPL_, cond)
 #define VX_PP_IF(expr) __VX_PP_IF_IMPL(VX_PP_BOOLEAN(expr))
+
+#define __VX_PP_IF_ELSE_IMPL_1(...) __VA_ARGS__ __VX_PP_IF_IMPL_0
+#define __VX_PP_IF_ELSE_IMPL_0(...) __VX_PP_IF_IMPL_1
+#define __VX_PP_IF_ELSE_IMPL(cond) VX_PP_CAT(__VX_PP_IF_ELSE_IMPL_, cond)
+#define VX_PP_IF_ELSE(expr) __VX_PP_IF_ELSE_IMPL(VX_PP_BOOLEAN(expr))
+
+#define __VX_PP_ARGS_LIST_END() 0
+#define VX_PP_ARGS_LIST_EMPTY(...) \
+	VX_PP_NOT(VX_PP_ARG_1(__VX_PP_ARGS_LIST_END __VA_ARGS__)())
+
+#define __VX_PP_VOID()
+
+#define __VX_PP_MAP_LIST_GLITCH() VX_PP_MAP_LIST
+#define VX_PP_MAP_LIST(mproc, expr1, expr2, ...) mproc(expr1), \
+	VX_PP_IF_ELSE(VX_PP_ARGS_LIST_EMPTY(__VA_ARGS__)) (mproc(expr2)) ( \
+	__VX_PP_MAP_LIST_GLITCH __VX_PP_VOID __VX_PP_VOID ()()() \
+		(mproc, expr2, __VA_ARGS__))
 
 
 namespace vx
