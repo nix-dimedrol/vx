@@ -15,6 +15,8 @@ extern "C"
 #include "utils.hpp"
 #include <functional>
 
+#include "utils.hpp"
+
 
 #define __VX_LUA_DECLARE_REGISTRY_MARK(expr) static const void* (expr){&(expr)}
 
@@ -26,9 +28,11 @@ namespace lua
 
 struct nil : std::false_type {};
 
+using prime_types = types_pack<nil, bool, lua_Integer, lua_Number>;
 
-template<typename _T> void push(lua_State*, _T);
-template<typename _T> void push(lua_State*, _T const &);
+
+template<typename _T> std::enable_if_t<prime_types::is_contain<_T>::value>
+	push(lua_State*, _T);
 
 
 template<> void push(lua_State* _L, nil) {
@@ -43,8 +47,10 @@ template<> void push(lua_State* _L, lua_Integer _val) {
 template<> void push(lua_State* _L, lua_Number _val) {
 	lua_pushnumber(_L, _val); }
 
-template<> void push(lua_State* _L, string_view const & _val) {
+
+void push(lua_State* _L, string_view const & _val) {
 	lua_pushlstring(_L, _val.data(), _val.size()); }
+
 
 template<typename... _Args> void push(lua_State* _L,
 	std::tuple<_Args...> const & _val)
@@ -88,7 +94,7 @@ void register_proc_table(lua_State* _L)
 	lua_rawsetp(_L, LUA_REGISTRYINDEX, __proc_registry_mark);
 }
 
-template<> void push(lua_State* _L, proc_type const & _func)
+void push(lua_State* _L, proc_type const & _func)
 {
 	new (lua_newuserdata(_L, sizeof (proc_type))) proc_type{_func};
 	lua_rawgetp(_L, LUA_REGISTRYINDEX, __proc_registry_mark);
