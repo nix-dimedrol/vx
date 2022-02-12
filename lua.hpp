@@ -12,9 +12,7 @@ extern "C"
 #include "lua.h"
 }
 
-#include "utils.hpp"
 #include <functional>
-
 #include "utils.hpp"
 
 
@@ -28,24 +26,11 @@ namespace lua
 
 struct nil : std::false_type {};
 
-using prime_types = types_pack<nil, bool, lua_Integer, lua_Number>;
 
-
-template<typename _T> std::enable_if_t<prime_types::is_contain<_T>::value>
-	push(lua_State*, _T);
-
-
-template<> void push(lua_State* _L, nil) {
-	lua_pushnil(_L); }
-
-template<> void push(lua_State* _L, bool _val){
-	lua_pushboolean(_L, _val); }
-
-template<> void push(lua_State* _L, lua_Integer _val) {
-	lua_pushinteger(_L, _val); }
-
-template<> void push(lua_State* _L, lua_Number _val) {
-	lua_pushnumber(_L, _val); }
+void push(lua_State* _L, nil) { lua_pushnil(_L); }
+void push(lua_State* _L, bool _val){ lua_pushboolean(_L, _val); }
+void push(lua_State* _L, lua_Integer _val) { lua_pushinteger(_L, _val); }
+void push(lua_State* _L, lua_Number _val) { lua_pushnumber(_L, _val); }
 
 
 void push(lua_State* _L, string_view const & _val) {
@@ -86,7 +71,7 @@ __VX_LUA_DECLARE_REGISTRY_MARK(__proc_registry_mark);
 
 void register_proc_table(lua_State* _L)
 {
-	lua_createtable(_L, 0, 1);
+	lua_createtable(_L, 0, 2);
 	lua_pushcfunction(_L, detail::__proc_dispatch);
 	lua_setfield(_L, -2, "__call");
 	lua_pushcfunction(_L, detail::__proc_cleanup);
@@ -99,6 +84,11 @@ void push(lua_State* _L, proc_type const & _func)
 	new (lua_newuserdata(_L, sizeof (proc_type))) proc_type{_func};
 	lua_rawgetp(_L, LUA_REGISTRYINDEX, __proc_registry_mark);
 	lua_setmetatable(_L, -2);
+}
+
+void push(lua_State* _L, lua_CFunction _func)
+{
+	push(_L, proc_type{_func});
 }
 
 
